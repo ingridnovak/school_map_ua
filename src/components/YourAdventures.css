@@ -1,0 +1,273 @@
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Content */
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-content h3 {
+  margin: 0 0 20px 0;
+  font-size: 22px;
+  color: #333;
+  text-align: center;
+}
+
+/* Pin Selection Buttons */
+.pin-options {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.pin-button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pin-button:hover {
+  border-color: #6f9c76;
+  background: #f8faf8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(111, 156, 118, 0.2);
+}
+
+.pin-button.visited:hover {
+  border-color: #dc3545;
+  background: #fff5f5;
+}
+
+.pin-button.want-to-visit:hover {
+  border-color: #28a745;
+  background: #f0fff4;
+}
+
+.pin-preview {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.pin-button span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+  text-align: center;
+}
+
+/* Text Input Modal */
+.text-modal {
+  max-width: 600px;
+}
+
+.name-input,
+.text-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  margin-bottom: 15px;
+  transition: border-color 0.2s ease;
+}
+
+.name-input:focus,
+.text-input:focus {
+  outline: none;
+  border-color: #6f9c76;
+}
+
+.text-input {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* Modal Buttons */
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.cancel-button,
+.submit-button {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel-button {
+  background: #f0f0f0;
+  color: #666;
+  width: 100%;
+}
+
+.cancel-button:hover {
+  background: #e0e0e0;
+}
+
+.submit-button {
+  background: #6f9c76;
+  color: white;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: #5a8060;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(111, 156, 118, 0.3);
+}
+
+.submit-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Map Pins */
+.map-pin {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  z-index: 100;
+  pointer-events: none;
+  animation: dropPin 0.5s ease;
+}
+
+@keyframes dropPin {
+  from {
+    transform: translate(-50%, -150%) scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -100%) scale(1);
+    opacity: 1;
+  }
+}
+
+.pin-icon {
+  width: 30px;
+  height: 30px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Adventure Cards */
+.adventure-card {
+  position: absolute;
+  background: white;
+  border-radius: 8px;
+  padding: 10px 14px;
+  max-width: 250px;
+  min-width: 220px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  z-index: 50;
+  animation: slideIn 0.4s ease;
+  border-left: 4px solid #6f9c76;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.adventure-card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.pin-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pin-badge.visited {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.pin-badge.wantToVisit {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.region-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6f9c76;
+}
+
+.adventure-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #333;
+}
+
+.adventure-text {
+  font-size: 12px;
+  color: #555;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
