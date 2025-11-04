@@ -306,7 +306,7 @@ function YourAdventures() {
         const cardsLeft = Math.floor(totalCards * 0.2);
         const cardsRight = totalCards - cardsTop - cardsBottom - cardsLeft;
 
-        const cardSpacing = 90;
+        const cardSpacing = 120; // Increased spacing to prevent overlaps
 
         // Determine which side this card goes on and its position
         let side, positionInSide;
@@ -384,7 +384,7 @@ function YourAdventures() {
                 width: '100%',
                 height: '100%',
                 pointerEvents: 'none',
-                zIndex: 45
+                zIndex: 1900
               }}
             >
               <defs>

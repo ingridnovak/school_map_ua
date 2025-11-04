@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 2400;
   animation: fadeIn 0.2s ease;
 }
 
@@ -178,7 +178,7 @@
 .map-pin {
   position: absolute;
   transform: translate(-50%, -100%);
-  z-index: 100;
+  z-index: 2400;
   pointer-events: none;
   animation: dropPin 0.5s ease;
 }
@@ -208,8 +208,8 @@
   padding: 10px 14px;
   max-width: 250px;
   min-width: 220px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-  z-index: 50;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  z-index: 2500;
   animation: slideIn 0.4s ease;
   border-left: 4px solid #6f9c76;
 }
