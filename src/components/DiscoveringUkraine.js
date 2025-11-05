@@ -1,34 +1,34 @@
 import { useEffect, useRef } from 'react';
 import '../App.css';
 
-// Region data - customize text for each region
+// Region data - customize text for each region with vibrant rainbow colors
 const regionData = {
-  "Avtonomna Respublika Krym": { text: "Crimea", color: "#6f9c76" },
-  "Vinnytska": { text: "Vinnytsia", color: "#6f9c76" },
-  "Volynska": { text: "Volyn", color: "#6f9c76" },
-  "Dnipropetrovska": { text: "Dnipropetrovsk", color: "#6f9c76" },
-  "Donetska": { text: "Donetsk", color: "#6f9c76" },
-  "Zhytomyrska": { text: "Zhytomyr", color: "#6f9c76" },
-  "Zakarpatska": { text: "Zakarpattia", color: "#6f9c76" },
-  "Zaporizka": { text: "Zaporizhzhia", color: "#6f9c76" },
-  "Ivano-Frankivska": { text: "Ivano-Frankivsk", color: "#6f9c76" },
-  "Kyivska": { text: "Kyiv Oblast", color: "#6f9c76" },
-  "Kirovohradska": { text: "Kirovohrad", color: "#6f9c76" },
-  "Luhanska": { text: "Luhansk", color: "#6f9c76" },
-  "Lvivska": { text: "Lviv", color: "#6f9c76" },
-  "Mykolaivska": { text: "Mykolaiv", color: "#6f9c76" },
-  "Odeska": { text: "Odesa", color: "#6f9c76" },
-  "Poltavska": { text: "Poltava", color: "#6f9c76" },
-  "Rivnenska": { text: "Rivne", color: "#6f9c76" },
-  "Sumska": { text: "Sumy", color: "#6f9c76" },
-  "Ternopilska": { text: "Ternopil", color: "#6f9c76" },
-  "Kharkivska": { text: "Kharkiv", color: "#6f9c76" },
-  "Khersonska": { text: "Kherson", color: "#6f9c76" },
-  "Khmelnytska": { text: "Khmelnytskyi", color: "#6f9c76" },
-  "Cherkaska": { text: "Cherkasy", color: "#6f9c76" },
-  "Chernivetska": { text: "Chernivtsi", color: "#6f9c76" },
-  "Chernihivska": { text: "Chernihiv", color: "#6f9c76" },
-  "Sevastopilska": { text: "Sevastopol", color: "#6f9c76" }
+  "Avtonomna Respublika Krym": { text: "Crimea", color: "#ff9aa2" },        // Soft red
+  "Vinnytska": { text: "Vinnytsia", color: "#9ad3ff" },                      // Soft blue
+  "Volynska": { text: "Volyn", color: "#ffff99" },                           // Soft yellow
+  "Dnipropetrovska": { text: "Dnipropetrovsk", color: "#ffcc99" },           // Soft orange
+  "Donetska": { text: "Donetsk", color: "#d099f0" },                         // Soft purple
+  "Zhytomyrska": { text: "Zhytomyr", color: "#99ffb3" },                     // Soft green
+  "Zakarpatska": { text: "Zakarpattia", color: "#ffb3d9" },                  // Soft pink
+  "Zaporizka": { text: "Zaporizhzhia", color: "#b3e6f0" },                   // Soft cyan
+  "Ivano-Frankivska": { text: "Ivano-Frankivsk", color: "#ffeb99" },         // Soft cream
+  "Kyivska": { text: "Kyiv Oblast", color: "#ffb399" },                      // Soft peach
+  "Kirovohradska": { text: "Kirovohrad", color: "#b399ff" },                 // Soft lavender
+  "Luhanska": { text: "Luhansk", color: "#99ffe0" },                         // Soft mint
+  "Lvivska": { text: "Lviv", color: "#ff99d6" },                             // Soft magenta
+  "Mykolaivska": { text: "Mykolaiv", color: "#99ccff" },                     // Soft sky blue
+  "Odeska": { text: "Odesa", color: "#ffd699" },                             // Soft amber
+  "Poltavska": { text: "Poltava", color: "#c299ff" },                        // Soft violet
+  "Rivnenska": { text: "Rivne", color: "#99ffcc" },                          // Soft seafoam
+  "Sumska": { text: "Sumy", color: "#ff9999" },                              // Soft coral
+  "Ternopilska": { text: "Ternopil", color: "#99e6ff" },                     // Soft aqua
+  "Kharkivska": { text: "Kharkiv", color: "#fff799" },                       // Soft butter
+  "Khersonska": { text: "Kherson", color: "#ffc499" },                       // Soft apricot
+  "Khmelnytska": { text: "Khmelnytskyi", color: "#d499f0" },                 // Soft orchid
+  "Cherkaska": { text: "Cherkasy", color: "#99ffd9" },                       // Soft jade
+  "Chernivetska": { text: "Chernivtsi", color: "#ffcceb" },                  // Soft rose
+  "Chernihivska": { text: "Chernihiv", color: "#cce6ff" },                   // Soft periwinkle
+  "Sevastopilska": { text: "Sevastopol", color: "#ff99c2" }                  // Soft raspberry
 };
 
 function DiscoveringUkraine() {
@@ -48,13 +48,29 @@ function DiscoveringUkraine() {
           const svgElement = svgContainerRef.current.querySelector('svg');
           if (!svgElement) return;
 
-          // Style all paths at once
+          // Cache the CTM and container rect
+          let cachedCTM = null;
+          let cachedContainerRect = null;
+
+          const updateCache = () => {
+            cachedCTM = svgElement.getScreenCTM();
+            cachedContainerRect = svgContainerRef.current.getBoundingClientRect();
+          };
+
+          updateCache();
+          window.addEventListener('resize', updateCache);
+
+          // Pre-calculate and cache bounding boxes for all paths
+          const pathCache = new Map();
           const paths = svgElement.querySelectorAll('path[name]');
           paths.forEach(path => {
             const regionName = path.getAttribute('name');
             path.style.cursor = 'pointer';
             path.style.transition = 'fill 0.15s ease, filter 0.15s ease';
             path.style.fill = regionData[regionName]?.color || '#6f9c76';
+
+            // Cache bbox for performance
+            pathCache.set(path, path.getBBox());
           });
 
           // Use event delegation on the SVG container
@@ -76,13 +92,9 @@ function DiscoveringUkraine() {
             path.style.fill = '#4a7c5a';
             path.style.filter = 'brightness(1.2)';
 
-            // Update tooltip position and content
-            if (tooltipRef.current) {
-              const bbox = path.getBBox();
-              const containerRect = svgContainerRef.current.getBoundingClientRect();
-
-              // Get the CTM (Current Transformation Matrix) for accurate positioning
-              const ctm = svgElement.getScreenCTM();
+            // Update tooltip position and content using cached values
+            if (tooltipRef.current && cachedCTM && cachedContainerRect) {
+              const bbox = pathCache.get(path);
 
               // Calculate the center point of the region
               const point = svgElement.createSVGPoint();
@@ -90,7 +102,7 @@ function DiscoveringUkraine() {
               point.y = bbox.y;
 
               // Transform to screen coordinates
-              const screenPoint = point.matrixTransform(ctm);
+              const screenPoint = point.matrixTransform(cachedCTM);
 
               // Set tooltip content first to get its dimensions
               tooltipRef.current.textContent = regionData[regionName]?.text || regionName;
@@ -100,19 +112,17 @@ function DiscoveringUkraine() {
               const tooltipRect = tooltipRef.current.getBoundingClientRect();
 
               // Calculate position relative to container - center horizontally
-              const left = screenPoint.x - containerRect.left - (tooltipRect.width / 2);
-              let top = screenPoint.y - containerRect.top - tooltipRect.height - 15;
+              const left = screenPoint.x - cachedContainerRect.left - (tooltipRect.width / 2);
+              let top = screenPoint.y - cachedContainerRect.top - tooltipRect.height - 15;
 
               // Check if tooltip would be cut off at the top
-              // Consider both the screen position and the container position
               const tooltipTopScreenEdge = screenPoint.y - tooltipRect.height - 15;
               const minVisibleTop = 80; // Account for tabs and padding
 
               // If tooltip would go above the visible area, position it below instead
               if (tooltipTopScreenEdge < minVisibleTop || top < 0) {
                 // Position below the region
-                top = screenPoint.y - containerRect.top + bbox.height + 15;
-                // Remove the arrow at the top and we'll style it to point up
+                top = screenPoint.y - cachedContainerRect.top + bbox.height + 15;
                 tooltipRef.current.classList.add('tooltip-below');
               } else {
                 tooltipRef.current.classList.remove('tooltip-below');
@@ -159,6 +169,7 @@ function DiscoveringUkraine() {
             svgElement.removeEventListener('mouseover', handleMouseOver);
             svgElement.removeEventListener('mouseout', handleMouseOut);
             svgElement.removeEventListener('click', handleClick);
+            window.removeEventListener('resize', updateCache);
           };
         }
       } catch (error) {

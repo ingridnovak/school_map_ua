@@ -138,7 +138,8 @@
 }
 
 .cancel-button,
-.submit-button {
+.submit-button,
+.view-impressions-button {
   padding: 10px 24px;
   border: none;
   border-radius: 6px;
@@ -172,6 +173,20 @@
 .submit-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.view-impressions-button {
+  background: #4a7c9e;
+  color: white;
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.view-impressions-button:hover {
+  background: #3a6c8e;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(74, 124, 158, 0.3);
 }
 
 /* Map Pins */
@@ -269,5 +284,81 @@
   font-size: 12px;
   color: #555;
   line-height: 1.4;
+  word-wrap: break-word;
+}
+
+/* Impressions Modal */
+.impressions-modal {
+  max-width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.impressions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.impressions-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.impressions-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.impressions-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.impressions-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.impression-item {
+  background: #f8f9fa;
+  border-left: 4px solid #6f9c76;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.impression-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateX(4px);
+}
+
+.impression-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.impression-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.impression-region {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6f9c76;
+  margin-bottom: 8px;
+}
+
+.impression-text {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
   word-wrap: break-word;
 }

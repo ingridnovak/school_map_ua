@@ -2,34 +2,34 @@ import { useEffect, useRef, useState } from 'react';
 import '../App.css';
 import './YourAdventures.css';
 
-// Region data - customize text for each region
+// Region data - customize text for each region with vibrant rainbow colors
 const regionData = {
-  "Avtonomna Respublika Krym": { text: "Crimea", color: "#6f9c76" },
-  "Vinnytska": { text: "Vinnytsia", color: "#6f9c76" },
-  "Volynska": { text: "Volyn", color: "#6f9c76" },
-  "Dnipropetrovska": { text: "Dnipropetrovsk", color: "#6f9c76" },
-  "Donetska": { text: "Donetsk", color: "#6f9c76" },
-  "Zhytomyrska": { text: "Zhytomyr", color: "#6f9c76" },
-  "Zakarpatska": { text: "Zakarpattia", color: "#6f9c76" },
-  "Zaporizka": { text: "Zaporizhzhia", color: "#6f9c76" },
-  "Ivano-Frankivska": { text: "Ivano-Frankivsk", color: "#6f9c76" },
-  "Kyivska": { text: "Kyiv Oblast", color: "#6f9c76" },
-  "Kirovohradska": { text: "Kirovohrad", color: "#6f9c76" },
-  "Luhanska": { text: "Luhansk", color: "#6f9c76" },
-  "Lvivska": { text: "Lviv", color: "#6f9c76" },
-  "Mykolaivska": { text: "Mykolaiv", color: "#6f9c76" },
-  "Odeska": { text: "Odesa", color: "#6f9c76" },
-  "Poltavska": { text: "Poltava", color: "#6f9c76" },
-  "Rivnenska": { text: "Rivne", color: "#6f9c76" },
-  "Sumska": { text: "Sumy", color: "#6f9c76" },
-  "Ternopilska": { text: "Ternopil", color: "#6f9c76" },
-  "Kharkivska": { text: "Kharkiv", color: "#6f9c76" },
-  "Khersonska": { text: "Kherson", color: "#6f9c76" },
-  "Khmelnytska": { text: "Khmelnytskyi", color: "#6f9c76" },
-  "Cherkaska": { text: "Cherkasy", color: "#6f9c76" },
-  "Chernivetska": { text: "Chernivtsi", color: "#6f9c76" },
-  "Chernihivska": { text: "Chernihiv", color: "#6f9c76" },
-  "Sevastopilska": { text: "Sevastopol", color: "#6f9c76" }
+  "Avtonomna Respublika Krym": { text: "Crimea", color: "#ff9aa2" },        // Soft red
+  "Vinnytska": { text: "Vinnytsia", color: "#9ad3ff" },                      // Soft blue
+  "Volynska": { text: "Volyn", color: "#ffff99" },                           // Soft yellow
+  "Dnipropetrovska": { text: "Dnipropetrovsk", color: "#ffcc99" },           // Soft orange
+  "Donetska": { text: "Donetsk", color: "#d099f0" },                         // Soft purple
+  "Zhytomyrska": { text: "Zhytomyr", color: "#99ffb3" },                     // Soft green
+  "Zakarpatska": { text: "Zakarpattia", color: "#ffb3d9" },                  // Soft pink
+  "Zaporizka": { text: "Zaporizhzhia", color: "#b3e6f0" },                   // Soft cyan
+  "Ivano-Frankivska": { text: "Ivano-Frankivsk", color: "#ffeb99" },         // Soft cream
+  "Kyivska": { text: "Kyiv Oblast", color: "#ffb399" },                      // Soft peach
+  "Kirovohradska": { text: "Kirovohrad", color: "#b399ff" },                 // Soft lavender
+  "Luhanska": { text: "Luhansk", color: "#99ffe0" },                         // Soft mint
+  "Lvivska": { text: "Lviv", color: "#ff99d6" },                             // Soft magenta
+  "Mykolaivska": { text: "Mykolaiv", color: "#99ccff" },                     // Soft sky blue
+  "Odeska": { text: "Odesa", color: "#ffd699" },                             // Soft amber
+  "Poltavska": { text: "Poltava", color: "#c299ff" },                        // Soft violet
+  "Rivnenska": { text: "Rivne", color: "#99ffcc" },                          // Soft seafoam
+  "Sumska": { text: "Sumy", color: "#ff9999" },                              // Soft coral
+  "Ternopilska": { text: "Ternopil", color: "#99e6ff" },                     // Soft aqua
+  "Kharkivska": { text: "Kharkiv", color: "#fff799" },                       // Soft butter
+  "Khersonska": { text: "Kherson", color: "#ffc499" },                       // Soft apricot
+  "Khmelnytska": { text: "Khmelnytskyi", color: "#d499f0" },                 // Soft orchid
+  "Cherkaska": { text: "Cherkasy", color: "#99ffd9" },                       // Soft jade
+  "Chernivetska": { text: "Chernivtsi", color: "#ffcceb" },                  // Soft rose
+  "Chernihivska": { text: "Chernihiv", color: "#cce6ff" },                   // Soft periwinkle
+  "Sevastopilska": { text: "Sevastopol", color: "#ff99c2" }                  // Soft raspberry
 };
 
 function YourAdventures() {
@@ -40,13 +40,13 @@ function YourAdventures() {
 
   const [showPinModal, setShowPinModal] = useState(false);
   const [showTextModal, setShowTextModal] = useState(false);
+  const [showImpressionsModal, setShowImpressionsModal] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [selectedPinType, setSelectedPinType] = useState(null);
   const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 });
   const [pins, setPins] = useState([]);
   const [currentText, setCurrentText] = useState('');
   const [currentName, setCurrentName] = useState('');
-  const [hoveredRegion, setHoveredRegion] = useState(null);
 
   useEffect(() => {
     const loadAndSetupSVG = async () => {
@@ -62,13 +62,29 @@ function YourAdventures() {
 
           svgElementRef.current = svgElement;
 
-          // Style all paths at once
+          // Cache the CTM and container rect
+          let cachedCTM = null;
+          let cachedContainerRect = null;
+
+          const updateCache = () => {
+            cachedCTM = svgElement.getScreenCTM();
+            cachedContainerRect = svgContainerRef.current.getBoundingClientRect();
+          };
+
+          updateCache();
+          window.addEventListener('resize', updateCache);
+
+          // Pre-calculate and cache bounding boxes for all paths
+          const pathCache = new Map();
           const paths = svgElement.querySelectorAll('path[name]');
           paths.forEach(path => {
             const regionName = path.getAttribute('name');
             path.style.cursor = 'pointer';
             path.style.transition = 'fill 0.15s ease, filter 0.15s ease';
             path.style.fill = regionData[regionName]?.color || '#6f9c76';
+
+            // Cache bbox for performance
+            pathCache.set(path, path.getBBox());
           });
 
           // Use event delegation on the SVG container
@@ -90,16 +106,9 @@ function YourAdventures() {
             path.style.fill = '#4a7c5a';
             path.style.filter = 'brightness(1.2)';
 
-            // Set hovered region to show text windows
-            setHoveredRegion(regionName);
-
-            // Update tooltip position and content
-            if (tooltipRef.current) {
-              const bbox = path.getBBox();
-              const containerRect = svgContainerRef.current.getBoundingClientRect();
-
-              // Get the CTM (Current Transformation Matrix) for accurate positioning
-              const ctm = svgElement.getScreenCTM();
+            // Update tooltip position and content using cached values
+            if (tooltipRef.current && cachedCTM && cachedContainerRect) {
+              const bbox = pathCache.get(path);
 
               // Calculate the center point of the region
               const point = svgElement.createSVGPoint();
@@ -107,29 +116,27 @@ function YourAdventures() {
               point.y = bbox.y;
 
               // Transform to screen coordinates
-              const screenPoint = point.matrixTransform(ctm);
+              const screenPoint = point.matrixTransform(cachedCTM);
 
               // Set tooltip content to just the region name
               tooltipRef.current.textContent = regionData[regionName]?.text || regionName;
               tooltipRef.current.style.display = 'block';
-              tooltipRef.current.style.whiteSpace = 'nowrap';
 
               // Get tooltip dimensions
               const tooltipRect = tooltipRef.current.getBoundingClientRect();
 
               // Calculate position relative to container - center horizontally
-              const left = screenPoint.x - containerRect.left - (tooltipRect.width / 2);
-              let top = screenPoint.y - containerRect.top - tooltipRect.height - 15;
+              const left = screenPoint.x - cachedContainerRect.left - (tooltipRect.width / 2);
+              let top = screenPoint.y - cachedContainerRect.top - tooltipRect.height - 15;
 
               // Check if tooltip would be cut off at the top
-              // Consider both the screen position and the container position
               const tooltipTopScreenEdge = screenPoint.y - tooltipRect.height - 15;
               const minVisibleTop = 80; // Account for tabs and padding
 
               // If tooltip would go above the visible area, position it below instead
               if (tooltipTopScreenEdge < minVisibleTop || top < 0) {
                 // Position below the region
-                top = screenPoint.y - containerRect.top + bbox.height + 15;
+                top = screenPoint.y - cachedContainerRect.top + bbox.height + 15;
                 tooltipRef.current.classList.add('tooltip-below');
               } else {
                 tooltipRef.current.classList.remove('tooltip-below');
@@ -151,9 +158,6 @@ function YourAdventures() {
             if (currentHoveredPath.current === path) {
               currentHoveredPath.current = null;
             }
-
-            // Hide hovered region state
-            setHoveredRegion(null);
 
             // Hide tooltip
             if (tooltipRef.current) {
@@ -191,6 +195,7 @@ function YourAdventures() {
             svgElement.removeEventListener('mouseover', handleMouseOver);
             svgElement.removeEventListener('mouseout', handleMouseOut);
             svgElement.removeEventListener('click', handleClick);
+            window.removeEventListener('resize', updateCache);
           };
         }
       } catch (error) {
@@ -210,8 +215,14 @@ function YourAdventures() {
   const handleTextSubmit = () => {
     if (!currentText.trim()) return;
 
-    // Calculate random position within the region bbox
+    // Calculate offset for multiple pins in the same region
     const regionPinsCount = pins.filter(p => p.region === selectedRegion).length;
+
+    // Add spacing offset for multiple pins (spread them out in a circle pattern)
+    const pinSpacing = 30; // Distance between pins in SVG coordinates
+    const angle = (regionPinsCount * 60) * (Math.PI / 180); // 60 degrees apart
+    const offsetX = Math.cos(angle) * pinSpacing;
+    const offsetY = Math.sin(angle) * pinSpacing;
 
     const newPin = {
       id: Date.now(),
@@ -219,8 +230,8 @@ function YourAdventures() {
       pinType: selectedPinType,
       text: currentText,
       name: currentName,
-      x: clickPosition.x,
-      y: clickPosition.y,
+      x: clickPosition.x + offsetX,
+      y: clickPosition.y + offsetY,
       index: regionPinsCount
     };
 
@@ -235,6 +246,7 @@ function YourAdventures() {
   const handleModalClose = () => {
     setShowPinModal(false);
     setShowTextModal(false);
+    setShowImpressionsModal(false);
     setSelectedRegion(null);
     setSelectedPinType(null);
     setCurrentText('');
@@ -281,159 +293,6 @@ function YourAdventures() {
         );
       })}
 
-      {/* Text cards for each pin - only show for hovered region */}
-      {pins.map((pin) => {
-        if (!svgElementRef.current) return null;
-        if (hoveredRegion !== pin.region) return null;
-
-        const svgElement = svgElementRef.current;
-        const path = svgElement.querySelector(`path[name="${pin.region}"]`);
-        if (!path) return null;
-
-        const containerRect = svgContainerRef.current?.getBoundingClientRect();
-        const ctm = svgElement.getScreenCTM();
-
-        if (!containerRect || !ctm) return null;
-
-        // Distribute cards around all sides of the region evenly
-        // Calculate how many cards should go on each side
-        const regionPins = pins.filter(p => p.region === pin.region);
-        const totalCards = regionPins.length;
-
-        // Distribute proportionally: top/bottom get slightly more, left/right get fewer
-        const cardsTop = Math.ceil(totalCards * 0.3);
-        const cardsBottom = Math.ceil(totalCards * 0.3);
-        const cardsLeft = Math.floor(totalCards * 0.2);
-        const cardsRight = totalCards - cardsTop - cardsBottom - cardsLeft;
-
-        const cardSpacing = 120; // Increased spacing to prevent overlaps
-
-        // Determine which side this card goes on and its position
-        let side, positionInSide;
-        if (pin.index < cardsTop) {
-          side = 'top';
-          positionInSide = pin.index;
-        } else if (pin.index < cardsTop + cardsRight) {
-          side = 'right';
-          positionInSide = pin.index - cardsTop;
-        } else if (pin.index < cardsTop + cardsRight + cardsBottom) {
-          side = 'bottom';
-          positionInSide = pin.index - cardsTop - cardsRight;
-        } else {
-          side = 'left';
-          positionInSide = pin.index - cardsTop - cardsRight - cardsBottom;
-        }
-
-        const cardPoint = svgElement.createSVGPoint();
-        const arrowStartPoint = svgElement.createSVGPoint();
-
-        // Arrow should start from the pin position, not bbox edges
-        arrowStartPoint.x = pin.x;
-        arrowStartPoint.y = pin.y;
-
-        // Calculate card position based on side, offset from pin location
-        switch(side) {
-          case 'right':
-            cardPoint.x = pin.x + 50;
-            cardPoint.y = pin.y + (positionInSide * cardSpacing) - 40;
-            break;
-          case 'left':
-            cardPoint.x = pin.x - 270; // Card width ~250px + margin
-            cardPoint.y = pin.y + (positionInSide * cardSpacing) - 40;
-            break;
-          case 'bottom':
-            cardPoint.x = pin.x + (positionInSide * 270) - 125;
-            cardPoint.y = pin.y + 50;
-            break;
-          case 'top':
-            cardPoint.x = pin.x + (positionInSide * 270) - 125;
-            cardPoint.y = pin.y - 110; // Card height ~90px + margin
-            break;
-          default:
-            cardPoint.x = pin.x + 50;
-            cardPoint.y = pin.y + (positionInSide * cardSpacing) - 40;
-        }
-
-        const cardScreenPoint = cardPoint.matrixTransform(ctm);
-        const arrowStart = arrowStartPoint.matrixTransform(ctm);
-
-        // Arrow end point (at card) - adjust based on side
-        let arrowEndOffset = { x: 0, y: 40 };
-        if (side === 'left') {
-          arrowEndOffset = { x: 250, y: 40 }; // Point to right edge of card
-        } else if (side === 'bottom') {
-          arrowEndOffset = { x: 125, y: 0 }; // Point to top center of card
-        } else if (side === 'top') {
-          arrowEndOffset = { x: 125, y: 90 }; // Point to bottom center of card
-        }
-
-        const arrowEnd = {
-          x: cardScreenPoint.x - containerRect.left + arrowEndOffset.x,
-          y: cardScreenPoint.y - containerRect.top + arrowEndOffset.y
-        };
-
-        return (
-          <div key={`card-${pin.id}`}>
-            {/* Arrow connecting region to card */}
-            <svg
-              className="adventure-arrow"
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                width: '100%',
-                height: '100%',
-                pointerEvents: 'none',
-                zIndex: 1900
-              }}
-            >
-              <defs>
-                <marker
-                  id={`arrowhead-${pin.id}`}
-                  markerWidth="10"
-                  markerHeight="10"
-                  refX="9"
-                  refY="3"
-                  orient="auto"
-                >
-                  <polygon
-                    points="0 0, 10 3, 0 6"
-                    fill={pin.pinType === 'visited' ? '#c62828' : '#2e7d32'}
-                  />
-                </marker>
-              </defs>
-              <line
-                x1={arrowStart.x - containerRect.left}
-                y1={arrowStart.y - containerRect.top}
-                x2={arrowEnd.x}
-                y2={arrowEnd.y}
-                stroke={pin.pinType === 'visited' ? '#c62828' : '#2e7d32'}
-                strokeWidth="2"
-                markerEnd={`url(#arrowhead-${pin.id})`}
-                opacity="0.6"
-              />
-            </svg>
-
-            {/* Adventure card */}
-            <div
-              className="adventure-card"
-              style={{
-                left: `${cardScreenPoint.x - containerRect.left}px`,
-                top: `${cardScreenPoint.y - containerRect.top}px`,
-              }}
-            >
-              <div className="adventure-card-header">
-                <span className={`pin-badge ${pin.pinType}`}>
-                  {pin.pinType === 'visited' ? 'Visited' : 'Want to Visit'}
-                </span>
-                <span className="region-name">{regionData[pin.region]?.text || pin.region}</span>
-                {pin.name && <span className="adventure-name">{pin.name}</span>}
-              </div>
-              <div className="adventure-text">{pin.text}</div>
-            </div>
-          </div>
-        );
-      })}
 
       <div
         ref={tooltipRef}
@@ -462,6 +321,17 @@ function YourAdventures() {
                 <span>I would like to visit</span>
               </button>
             </div>
+            {pins.filter(p => p.region === selectedRegion).length > 0 && (
+              <button
+                className="view-impressions-button"
+                onClick={() => {
+                  setShowPinModal(false);
+                  setShowImpressionsModal(true);
+                }}
+              >
+                View All Impressions
+              </button>
+            )}
             <button className="cancel-button" onClick={handleModalClose}>Cancel</button>
           </div>
         </div>
@@ -504,6 +374,32 @@ function YourAdventures() {
                 Add Pin
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Impressions Modal */}
+      {showImpressionsModal && selectedRegion && (
+        <div className="modal-overlay" onClick={handleModalClose}>
+          <div className="modal-content impressions-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Impressions for {regionData[selectedRegion]?.text || selectedRegion}</h3>
+            <div className="impressions-list">
+              {pins
+                .filter(pin => pin.region === selectedRegion)
+                .map(pin => (
+                  <div key={pin.id} className="impression-item">
+                    <div className="impression-header">
+                      <span className={`pin-badge ${pin.pinType}`}>
+                        {pin.pinType === 'visited' ? 'Already been here' : 'Would like to visit'}
+                      </span>
+                      {pin.name && <span className="impression-author">by {pin.name}</span>}
+                    </div>
+                    <div className="impression-region">{regionData[pin.region]?.text || pin.region}</div>
+                    <div className="impression-text">{pin.text}</div>
+                  </div>
+                ))}
+            </div>
+            <button className="cancel-button" onClick={handleModalClose}>Close</button>
           </div>
         </div>
       )}
