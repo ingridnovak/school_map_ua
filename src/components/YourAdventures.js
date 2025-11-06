@@ -33,6 +33,7 @@ const regionData = {
 };
 
 function YourAdventures() {
+  const mapContainerRef = useRef(null);
   const svgContainerRef = useRef(null);
   const tooltipRef = useRef(null);
   const currentHoveredPath = useRef(null);
@@ -47,6 +48,7 @@ function YourAdventures() {
   const [pins, setPins] = useState([]);
   const [currentText, setCurrentText] = useState('');
   const [currentName, setCurrentName] = useState('');
+  const [, forceUpdate] = useState({});
 
   useEffect(() => {
     const loadAndSetupSVG = async () => {
@@ -65,10 +67,13 @@ function YourAdventures() {
           // Cache the CTM and container rect
           let cachedCTM = null;
           let cachedContainerRect = null;
+          let cachedMapRect = null;
 
           const updateCache = () => {
+            if (!svgElement || !svgContainerRef.current || !mapContainerRef.current) return;
             cachedCTM = svgElement.getScreenCTM();
             cachedContainerRect = svgContainerRef.current.getBoundingClientRect();
+            cachedMapRect = mapContainerRef.current.getBoundingClientRect();
           };
 
           updateCache();
@@ -77,6 +82,8 @@ function YourAdventures() {
           // Pre-calculate and cache bounding boxes for all paths
           const pathCache = new Map();
           const paths = svgElement.querySelectorAll('path[name]');
+          const labels = [];
+
           paths.forEach(path => {
             const regionName = path.getAttribute('name');
             path.style.cursor = 'pointer';
@@ -84,8 +91,41 @@ function YourAdventures() {
             path.style.fill = regionData[regionName]?.color || '#6f9c76';
 
             // Cache bbox for performance
-            pathCache.set(path, path.getBBox());
+            const bbox = path.getBBox();
+            pathCache.set(path, bbox);
+
+            // Calculate label position for mobile
+            const centerX = bbox.x + bbox.width / 2;
+            const centerY = bbox.y + bbox.height / 2;
+            labels.push({
+              name: regionName,
+              text: regionData[regionName]?.text || regionName,
+              x: centerX,
+              y: centerY
+            });
           });
+
+          // Add text labels directly to SVG for mobile
+          const addLabelsToSVG = () => {
+            // Remove existing labels
+            const existingLabels = svgElement.querySelectorAll('.region-text-label');
+            existingLabels.forEach(label => label.remove());
+
+            // Add new labels
+            labels.forEach(label => {
+              const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+              text.setAttribute('x', label.x);
+              text.setAttribute('y', label.y);
+              text.setAttribute('class', 'region-text-label');
+              text.setAttribute('text-anchor', 'middle');
+              text.setAttribute('dominant-baseline', 'middle');
+              text.setAttribute('pointer-events', 'none');
+              text.textContent = label.text;
+              svgElement.appendChild(text);
+            });
+          };
+
+          addLabelsToSVG();
 
           // Use event delegation on the SVG container
           const handleMouseOver = (e) => {
@@ -107,7 +147,7 @@ function YourAdventures() {
             path.style.filter = 'brightness(1.2)';
 
             // Update tooltip position and content using cached values
-            if (tooltipRef.current && cachedCTM && cachedContainerRect) {
+            if (tooltipRef.current && cachedCTM && cachedMapRect) {
               const bbox = pathCache.get(path);
 
               // Calculate the center point of the region
@@ -125,9 +165,9 @@ function YourAdventures() {
               // Get tooltip dimensions
               const tooltipRect = tooltipRef.current.getBoundingClientRect();
 
-              // Calculate position relative to container - center horizontally
-              const left = screenPoint.x - cachedContainerRect.left - (tooltipRect.width / 2);
-              let top = screenPoint.y - cachedContainerRect.top - tooltipRect.height - 15;
+              // Calculate position relative to map-container - center horizontally
+              const left = screenPoint.x - cachedMapRect.left - (tooltipRect.width / 2);
+              let top = screenPoint.y - cachedMapRect.top - tooltipRect.height - 15;
 
               // Check if tooltip would be cut off at the top
               const tooltipTopScreenEdge = screenPoint.y - tooltipRect.height - 15;
@@ -136,7 +176,7 @@ function YourAdventures() {
               // If tooltip would go above the visible area, position it below instead
               if (tooltipTopScreenEdge < minVisibleTop || top < 0) {
                 // Position below the region
-                top = screenPoint.y - cachedContainerRect.top + bbox.height + 15;
+                top = screenPoint.y - cachedMapRect.top + bbox.height + 15;
                 tooltipRef.current.classList.add('tooltip-below');
               } else {
                 tooltipRef.current.classList.remove('tooltip-below');
@@ -170,19 +210,15 @@ function YourAdventures() {
             if (!path) return;
 
             const regionName = path.getAttribute('name');
-            const bbox = path.getBBox();
+            const bbox = pathCache.get(path);
 
-            // Get click position in SVG coordinates
-            const pt = svgElement.createSVGPoint();
-            pt.x = e.clientX;
-            pt.y = e.clientY;
+            // Use the center of the region's bounding box to ensure pin is always within the region
+            // This prevents pins from being placed outside the region when clicking near borders
+            const centerX = bbox.x + bbox.width / 2;
+            const centerY = bbox.y + bbox.height / 2;
 
-            // Transform client coordinates to SVG coordinate space
-            const svgP = pt.matrixTransform(svgElement.getScreenCTM().inverse());
-
-            // Always use the exact click position (it's already validated by the path click event)
             setSelectedRegion(regionName);
-            setClickPosition({ x: svgP.x, y: svgP.y, bbox });
+            setClickPosition({ x: centerX, y: centerY, bbox });
             setShowPinModal(true);
           };
 
@@ -205,6 +241,21 @@ function YourAdventures() {
 
     loadAndSetupSVG();
   }, [pins]);
+
+  // Handle scroll events to update pin positions in mobile view
+  useEffect(() => {
+    const mapContainer = mapContainerRef.current;
+    if (!mapContainer) return;
+
+    const handleScroll = () => {
+      forceUpdate({});
+    };
+
+    mapContainer.addEventListener('scroll', handleScroll);
+    return () => {
+      mapContainer.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const handlePinSelection = (pinType) => {
     setSelectedPinType(pinType);
@@ -254,7 +305,7 @@ function YourAdventures() {
   };
 
   return (
-    <div className="map-container">
+    <div className="map-container" ref={mapContainerRef}>
       <div
         ref={svgContainerRef}
         className="interactive-svg"
@@ -262,26 +313,30 @@ function YourAdventures() {
 
       {/* Render pins on the map */}
       {pins.map((pin) => {
-        if (!svgElementRef.current) return null;
+        if (!svgElementRef.current || !mapContainerRef.current) return null;
 
         const svgElement = svgElementRef.current;
         const ctm = svgElement.getScreenCTM();
-        const containerRect = svgContainerRef.current?.getBoundingClientRect();
+        const mapRect = mapContainerRef.current.getBoundingClientRect();
 
-        if (!containerRect || !ctm) return null;
+        if (!mapRect || !ctm) return null;
 
         const point = svgElement.createSVGPoint();
         point.x = pin.x;
         point.y = pin.y;
         const screenPoint = point.matrixTransform(ctm);
 
+        // Account for scroll offset in mobile view where map is scrollable
+        const scrollLeft = mapContainerRef.current.scrollLeft || 0;
+        const scrollTop = mapContainerRef.current.scrollTop || 0;
+
         return (
           <div
             key={pin.id}
             className="map-pin"
             style={{
-              left: `${screenPoint.x - containerRect.left}px`,
-              top: `${screenPoint.y - containerRect.top}px`,
+              left: `${screenPoint.x - mapRect.left + scrollLeft}px`,
+              top: `${screenPoint.y - mapRect.top + scrollTop}px`,
             }}
           >
             <img
@@ -299,6 +354,10 @@ function YourAdventures() {
         className="region-tooltip"
         style={{ display: 'none' }}
       />
+
+      <div className="scroll-hint">
+        👆 Swipe to explore the map
+      </div>
 
       {/* Pin Selection Modal */}
       {showPinModal && (

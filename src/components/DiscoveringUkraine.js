@@ -32,6 +32,7 @@ const regionData = {
 };
 
 function DiscoveringUkraine() {
+  const mapContainerRef = useRef(null);
   const svgContainerRef = useRef(null);
   const tooltipRef = useRef(null);
   const currentHoveredPath = useRef(null);
@@ -51,10 +52,13 @@ function DiscoveringUkraine() {
           // Cache the CTM and container rect
           let cachedCTM = null;
           let cachedContainerRect = null;
+          let cachedMapRect = null;
 
           const updateCache = () => {
+            if (!svgElement || !svgContainerRef.current || !mapContainerRef.current) return;
             cachedCTM = svgElement.getScreenCTM();
             cachedContainerRect = svgContainerRef.current.getBoundingClientRect();
+            cachedMapRect = mapContainerRef.current.getBoundingClientRect();
           };
 
           updateCache();
@@ -63,6 +67,8 @@ function DiscoveringUkraine() {
           // Pre-calculate and cache bounding boxes for all paths
           const pathCache = new Map();
           const paths = svgElement.querySelectorAll('path[name]');
+          const labels = [];
+
           paths.forEach(path => {
             const regionName = path.getAttribute('name');
             path.style.cursor = 'pointer';
@@ -70,8 +76,41 @@ function DiscoveringUkraine() {
             path.style.fill = regionData[regionName]?.color || '#6f9c76';
 
             // Cache bbox for performance
-            pathCache.set(path, path.getBBox());
+            const bbox = path.getBBox();
+            pathCache.set(path, bbox);
+
+            // Calculate label position for mobile
+            const centerX = bbox.x + bbox.width / 2;
+            const centerY = bbox.y + bbox.height / 2;
+            labels.push({
+              name: regionName,
+              text: regionData[regionName]?.text || regionName,
+              x: centerX,
+              y: centerY
+            });
           });
+
+          // Add text labels directly to SVG for mobile
+          const addLabelsToSVG = () => {
+            // Remove existing labels
+            const existingLabels = svgElement.querySelectorAll('.region-text-label');
+            existingLabels.forEach(label => label.remove());
+
+            // Add new labels
+            labels.forEach(label => {
+              const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+              text.setAttribute('x', label.x);
+              text.setAttribute('y', label.y);
+              text.setAttribute('class', 'region-text-label');
+              text.setAttribute('text-anchor', 'middle');
+              text.setAttribute('dominant-baseline', 'middle');
+              text.setAttribute('pointer-events', 'none');
+              text.textContent = label.text;
+              svgElement.appendChild(text);
+            });
+          };
+
+          addLabelsToSVG();
 
           // Use event delegation on the SVG container
           const handleMouseOver = (e) => {
@@ -93,7 +132,7 @@ function DiscoveringUkraine() {
             path.style.filter = 'brightness(1.2)';
 
             // Update tooltip position and content using cached values
-            if (tooltipRef.current && cachedCTM && cachedContainerRect) {
+            if (tooltipRef.current && cachedCTM && cachedMapRect) {
               const bbox = pathCache.get(path);
 
               // Calculate the center point of the region
@@ -111,9 +150,9 @@ function DiscoveringUkraine() {
               // Get tooltip dimensions
               const tooltipRect = tooltipRef.current.getBoundingClientRect();
 
-              // Calculate position relative to container - center horizontally
-              const left = screenPoint.x - cachedContainerRect.left - (tooltipRect.width / 2);
-              let top = screenPoint.y - cachedContainerRect.top - tooltipRect.height - 15;
+              // Calculate position relative to map-container - center horizontally
+              const left = screenPoint.x - cachedMapRect.left - (tooltipRect.width / 2);
+              let top = screenPoint.y - cachedMapRect.top - tooltipRect.height - 15;
 
               // Check if tooltip would be cut off at the top
               const tooltipTopScreenEdge = screenPoint.y - tooltipRect.height - 15;
@@ -122,7 +161,7 @@ function DiscoveringUkraine() {
               // If tooltip would go above the visible area, position it below instead
               if (tooltipTopScreenEdge < minVisibleTop || top < 0) {
                 // Position below the region
-                top = screenPoint.y - cachedContainerRect.top + bbox.height + 15;
+                top = screenPoint.y - cachedMapRect.top + bbox.height + 15;
                 tooltipRef.current.classList.add('tooltip-below');
               } else {
                 tooltipRef.current.classList.remove('tooltip-below');
@@ -181,16 +220,21 @@ function DiscoveringUkraine() {
   }, []);
 
   return (
-    <div className="map-container">
+    <div className="map-container" ref={mapContainerRef}>
       <div
         ref={svgContainerRef}
         className="interactive-svg"
       />
+
       <div
         ref={tooltipRef}
         className="region-tooltip"
         style={{ display: 'none' }}
       />
+
+      <div className="scroll-hint">
+        👆 Swipe to explore the map
+      </div>
     </div>
   );
 }

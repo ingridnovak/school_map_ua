@@ -362,3 +362,47 @@
   line-height: 1.6;
   word-wrap: break-word;
 }
+
+/* Responsive design for modals */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-content h3 {
+    font-size: 18px;
+  }
+
+  .pin-options {
+    flex-direction: column;
+  }
+
+  .pin-button {
+    width: 100%;
+  }
+
+  .text-modal {
+    max-width: 95%;
+  }
+
+  .impressions-modal {
+    max-width: 95%;
+    max-height: 85vh;
+  }
+
+  .impressions-list {
+    max-height: 55vh;
+  }
+
+  .map-pin {
+    z-index: 1500;
+  }
+
+  .pin-icon {
+    width: 24px;
+    height: 24px;
+  }
+}

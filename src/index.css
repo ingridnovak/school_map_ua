@@ -11,33 +11,42 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 #root {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100vh;
 }
 
 .App {
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: #f0f0f0;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .map-container {
   flex: 1;
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   position: relative;
-  padding: 12rem 20px 20px 20px;
-  overflow: auto;
   min-height: 0;
+}
+
+/* Desktop padding only */
+@media (min-width: 1025px) {
+  .map-container {
+    padding: 8rem 20px 20px 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 900px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
 }
 
 .full-page-map {
