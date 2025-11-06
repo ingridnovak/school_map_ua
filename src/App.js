@@ -2,6 +2,8 @@ import { useState } from 'react';
 import './App.css';
 import DiscoveringUkraine from './components/DiscoveringUkraine';
 import YourAdventures from './components/YourAdventures';
+import PhotoGallery from './components/PhotoGallery';
+import AboutSection from './components/AboutSection';
 
 function App() {
   const [activeTab, setActiveTab] = useState('discovering');
@@ -24,6 +26,10 @@ function App() {
       </div>
 
       {activeTab === 'discovering' ? <DiscoveringUkraine /> : <YourAdventures />}
+
+      <PhotoGallery />
+
+      <AboutSection />
     </div>
   );
 }
