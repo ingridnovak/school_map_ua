@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import '../App.css';
+import RegionModal from './RegionModal';
 
 // Region data - customize text for each region with vibrant rainbow colors
 const regionData = {
@@ -36,6 +37,7 @@ function DiscoveringUkraine() {
   const svgContainerRef = useRef(null);
   const tooltipRef = useRef(null);
   const currentHoveredPath = useRef(null);
+  const [selectedRegion, setSelectedRegion] = useState(null);
 
   useEffect(() => {
     const loadAndSetupSVG = async () => {
@@ -195,8 +197,7 @@ function DiscoveringUkraine() {
             if (!path) return;
 
             const regionName = path.getAttribute('name');
-            const region = regionData[regionName];
-            alert(`You clicked on: ${region ? region.text : regionName}`);
+            setSelectedRegion(regionName);
           };
 
           svgElement.addEventListener('mouseover', handleMouseOver);
@@ -235,6 +236,13 @@ function DiscoveringUkraine() {
       <div className="scroll-hint">
         👆 Swipe to explore the map
       </div>
+
+      {selectedRegion && (
+        <RegionModal
+          regionKey={selectedRegion}
+          onClose={() => setSelectedRegion(null)}
+        />
+      )}
     </div>
   );
 }
