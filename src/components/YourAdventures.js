@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import '../App.css';
 import './YourAdventures.css';
+import AuthModal from './AuthModal';
 
 // Region data - customize text for each region with vibrant rainbow colors
 const regionData = {
@@ -42,13 +43,22 @@ function YourAdventures() {
   const [showPinModal, setShowPinModal] = useState(false);
   const [showTextModal, setShowTextModal] = useState(false);
   const [showImpressionsModal, setShowImpressionsModal] = useState(false);
+  const [showAuthRequiredModal, setShowAuthRequiredModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [selectedPinType, setSelectedPinType] = useState(null);
   const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 });
   const [pins, setPins] = useState([]);
   const [currentText, setCurrentText] = useState('');
   const [currentName, setCurrentName] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [, forceUpdate] = useState({});
+
+  // Check if user is logged in
+  useEffect(() => {
+    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    setIsLoggedIn(loggedIn);
+  }, [showAuthModal]);
 
   useEffect(() => {
     const loadAndSetupSVG = async () => {
@@ -219,7 +229,13 @@ function YourAdventures() {
 
             setSelectedRegion(regionName);
             setClickPosition({ x: centerX, y: centerY, bbox });
-            setShowPinModal(true);
+
+            // Check if user is logged in before showing pin modal
+            if (!isLoggedIn) {
+              setShowAuthRequiredModal(true);
+            } else {
+              setShowPinModal(true);
+            }
           };
 
           svgElement.addEventListener('mouseover', handleMouseOver);
@@ -298,10 +314,16 @@ function YourAdventures() {
     setShowPinModal(false);
     setShowTextModal(false);
     setShowImpressionsModal(false);
+    setShowAuthRequiredModal(false);
     setSelectedRegion(null);
     setSelectedPinType(null);
     setCurrentText('');
     setCurrentName('');
+  };
+
+  const handleRegisterClick = () => {
+    setShowAuthRequiredModal(false);
+    setShowAuthModal(true);
   };
 
   return (
@@ -462,6 +484,35 @@ function YourAdventures() {
           </div>
         </div>
       )}
+
+      {/* Auth Required Modal */}
+      {showAuthRequiredModal && (
+        <div className="modal-overlay" onClick={handleModalClose}>
+          <div className="modal-content auth-required-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="auth-required-icon">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6m0 4h.01"/>
+              </svg>
+            </div>
+            <h3>Потрібна реєстрація</h3>
+            <p className="auth-required-message">
+              Будь ласка, зареєструйтеся, щоб додати свої враження
+            </p>
+            <div className="modal-buttons">
+              <button className="submit-button" onClick={handleRegisterClick}>
+                Зареєструватися
+              </button>
+              <button className="cancel-button" onClick={handleModalClose}>
+                Скасувати
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Auth Modal */}
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </div>
   );
 }

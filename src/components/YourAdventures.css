@@ -363,6 +363,46 @@
   word-wrap: break-word;
 }
 
+/* Auth Required Modal */
+.auth-required-modal {
+  text-align: center;
+  max-width: 420px;
+}
+
+.auth-required-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6f9c76 0%, #5a8060 100%);
+  color: white;
+  margin-bottom: 24px;
+}
+
+.auth-required-icon svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.auth-required-message {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.auth-required-modal .modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-required-modal .submit-button,
+.auth-required-modal .cancel-button {
+  width: 100%;
+}
+
 /* Responsive design for modals */
 @media (max-width: 768px) {
   .modal-content {
@@ -404,5 +444,16 @@
   .pin-icon {
     width: 24px;
     height: 24px;
+  }
+
+  .auth-required-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 20px;
+  }
+
+  .auth-required-icon svg {
+    width: 48px;
+    height: 48px;
   }
 }

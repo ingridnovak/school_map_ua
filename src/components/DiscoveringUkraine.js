@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import '../App.css';
 import RegionModal from './RegionModal';
+import AuthModal from './AuthModal';
 
 // Region data - customize text for each region with vibrant rainbow colors
 const regionData = {
@@ -38,6 +39,7 @@ function DiscoveringUkraine() {
   const tooltipRef = useRef(null);
   const currentHoveredPath = useRef(null);
   const [selectedRegion, setSelectedRegion] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
     const loadAndSetupSVG = async () => {
@@ -241,8 +243,11 @@ function DiscoveringUkraine() {
         <RegionModal
           regionKey={selectedRegion}
           onClose={() => setSelectedRegion(null)}
+          onOpenAuth={() => setShowAuthModal(true)}
         />
       )}
+
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </div>
   );
 }

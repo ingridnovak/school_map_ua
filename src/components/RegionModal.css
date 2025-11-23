@@ -380,6 +380,34 @@
   }
 }
 
+/* Auth Required Content Styles */
+.auth-required-content {
+  text-align: center;
+}
+
+.auth-required-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6f9c76 0%, #5a8060 100%);
+  color: white;
+  margin-bottom: 24px;
+}
+
+.auth-required-icon svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.auth-required-message {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
 /* Scrollbar Styling */
 .region-modal-container::-webkit-scrollbar {
   width: 8px;

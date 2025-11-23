@@ -1,13 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './RegionModal.css';
 import regionsData from '../data/regionsData.json';
 
-function RegionModal({ regionKey, onClose }) {
-  const [modalState, setModalState] = useState('info'); // 'info', 'test', 'qr'
+function RegionModal({ regionKey, onClose, onOpenAuth }) {
+  const [modalState, setModalState] = useState('info'); // 'info', 'test', 'qr', 'auth-required'
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [testResults, setTestResults] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const regionData = regionsData[regionKey];
+
+  // Check if user is logged in
+  useEffect(() => {
+    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    setIsLoggedIn(loggedIn);
+  }, []);
 
   if (!regionData) {
     return null;
@@ -18,9 +25,20 @@ function RegionModal({ regionKey, onClose }) {
   };
 
   const handleTestClick = () => {
+    if (!isLoggedIn) {
+      setModalState('auth-required');
+      return;
+    }
     setModalState('test');
     setSelectedAnswers({});
     setTestResults(null);
+  };
+
+  const handleRegisterClick = () => {
+    onClose();
+    if (onOpenAuth) {
+      onOpenAuth();
+    }
   };
 
   const handleDonateClick = () => {
@@ -189,12 +207,36 @@ function RegionModal({ regionKey, onClose }) {
     </div>
   );
 
+  const renderAuthRequiredContent = () => (
+    <div className="region-modal-content auth-required-content">
+      <div className="auth-required-icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 6v6m0 4h.01"/>
+        </svg>
+      </div>
+      <h2 className="region-modal-title">Потрібна реєстрація</h2>
+      <p className="auth-required-message">
+        Будь ласка, зареєструйтеся, щоб пройти тести та отримати сертифікат
+      </p>
+      <div className="region-modal-buttons">
+        <button className="region-modal-btn primary" onClick={handleRegisterClick}>
+          Зареєструватися
+        </button>
+        <button className="region-modal-btn cancel" onClick={handleBackToInfo}>
+          Назад
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="region-modal-overlay" onClick={onClose}>
       <div className="region-modal-container" onClick={(e) => e.stopPropagation()}>
         {modalState === 'info' && renderInfoContent()}
         {modalState === 'test' && renderTestContent()}
         {modalState === 'qr' && renderQRContent()}
+        {modalState === 'auth-required' && renderAuthRequiredContent()}
       </div>
     </div>
   );
