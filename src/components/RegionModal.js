@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import confetti from 'canvas-confetti';
 import './RegionModal.css';
 import regionsData from '../data/regionsData.json';
 
@@ -59,11 +60,23 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
         correct++;
       }
     });
+    const percentage = Math.round((correct / regionData.tests.length) * 100);
+
     setTestResults({
       correct,
       total: regionData.tests.length,
-      percentage: Math.round((correct / regionData.tests.length) * 100)
+      percentage
     });
+
+    // Trigger confetti for perfect score
+    if (percentage === 100) {
+      confetti({
+        particleCount: 150,
+        spread: 80,
+        origin: { y: 0.6 },
+        zIndex: 4000
+      });
+    }
   };
 
   const handleBackToInfo = () => {
@@ -74,7 +87,11 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
 
   const renderInfoContent = () => (
     <div className="region-modal-content">
-      <h2 className="region-modal-title">{regionData.name}</h2>
+      <div className="region-modal-title-wrapper">
+        <img src="/icons/flag.svg" alt="Ukraine flag" className="region-title-icon flag-icon" />
+        <h2 className="region-modal-title">{regionData.name}</h2>
+        <img src="/icons/trident.png" alt="Ukraine trident" className="region-title-icon trident-icon" />
+      </div>
       <p className="region-modal-description">{regionData.description}</p>
 
       <div className="region-modal-buttons">
@@ -96,7 +113,11 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
 
   const renderTestContent = () => (
     <div className="region-modal-content test-content">
-      <h2 className="region-modal-title">Тести: {regionData.name}</h2>
+      <div className="region-modal-title-wrapper">
+        <img src="/icons/ideas.png" alt="Ideas" className="region-title-icon" />
+        <h2 className="region-modal-title">Тести: {regionData.name}</h2>
+        <img src="/icons/exam.png" alt="Exam" className="region-title-icon" />
+      </div>
 
       {testResults ? (
         <div className="test-results">

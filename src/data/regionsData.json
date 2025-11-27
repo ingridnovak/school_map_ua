@@ -2,7 +2,7 @@
   "Vinnytska": {
     "name": "Вінницька область",
     "description": "Вінницька область розташована в центральній частині України. Відома своїми мальовничими краєвидами, історичними пам'ятками та багатою культурною спадщиною.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/573-vinnytska-oblast",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -76,7 +76,7 @@
   "Volynska": {
     "name": "Волинська область",
     "description": "Волинська область знаходиться на північному заході України. Регіон багатий на озера, ліси та історичні пам'ятки.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/572-volynska-oblast",
     "qrCodePath": "/qr-code-mock.png",
    "tests": [
       {
@@ -212,7 +212,7 @@
   "Dnipropetrovska": {
     "name": "Дніпропетровська область",
     "description": "Дніпропетровська область розташована в центральній та східній частині України. Через неї протікає річка Дніпро — одна з найбільших річок нашої країни.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/574-dnipropetrovska-oblast",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -280,7 +280,7 @@
    "Donetska": {
     "name": "Донецька область",
     "description": "Донецька область має в своїх надрах унікальні поклади кам’яної солі, білої глини (каоліну), використовуваної для виробництва якісної порцеляни, а також ртутної руди (кіноварі), цирконію, гранітів, крейди, вапняків і навіть алмазів.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/575-donetska-oblast",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -348,7 +348,7 @@
    "Zakarpatska": {
     "name": "Закарпатська область",
     "description": "Закарпаття відрізняється від інших регіонів України унікальним географічним положенням, історією, багатонаціональним складом та природними особливостями. Воно є єдиною областю, що межує одразу з чотирма країнами.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/576-zakarpatska-oblast",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -416,7 +416,7 @@
    "Zaporizka": {
     "name": "Запорізька область",
     "description": "Запорізька область - це край козацької спадщини з історичним центром на Хортиці та потужною промисловістю вздовж Дніпра.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/577-zaporizka-oblast",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -490,7 +490,7 @@
    "Kirovohradska": {
     "name": "Кіровоградська область",
     "description": "Кіровоградська область — це серце України, край працьовитих людей, козацької слави, мальовничої природи та культурної спадщини.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/579-kirovohradska-oblastt",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -559,7 +559,7 @@
    "Avtonomna Respublika Krym": {
     "name": "АВТОНО́МНА РЕСПУ́БЛІКА КРИМ",
     "description": "Автономна Республіка Крим - це півострів на узбережжі Чорного моря з унікальним поєднанням гірських ландшафтів, степів і багатої багатовікової культурної спадщини.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/580-avtonomna-respublika-krym",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -628,7 +628,7 @@
    "Mykolaivska": {
     "name": "Миколаївська область",
     "description": "Миколаївська область — це південний регіон України, розташований у межах степової зони. Вона відома своїми морськими традиціями, суднобудуванням, природними красотами та працьовитими людьми",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/582-mykolaivska-oblast",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -697,7 +697,7 @@
    "Odeska": {
     "name": "Одеська область",
     "description": "Одеська область - це багатонаціональний морський регіон із великим портом, степовими просторами та самобутньою культурою Причорномор'я.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/583-odeska-oblast",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -769,7 +769,7 @@
    "Poltavska": {
     "name": "Полтавська область",
     "description": "Полтавська область - це серце українського етносу з родючими чорноземами, історичними місцями та традиціями класичної української культури.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/570-poltavska-oblast-2",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -840,7 +840,7 @@
    "Rivnenska": {
     "name": "Рівненська область",
     "description": "Рівненщина — це серце Волині, край лісів, річок, стародавніх замків і бурштину.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/590-rivnenska-oblast",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -911,7 +911,7 @@
    "Sumska": {
     "name": "Сумська область",
     "description": "Сумська область – це не лише історія, а й справжній рай для любителів природи, де зелені хащі переплітаються з блакиттю річок, створюючи пейзажі, гідні пензля імпресіоністів.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/584-sumska-oblast",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -982,7 +982,7 @@
    "Ternopilska": {
     "name": "Тернопільська область",
     "description": "Тернопільська область - це край замків, озер і давніх святинь, відомий своєю мальовничкою природою та багатою історичною спадщиною.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/585-ternopilska-oblast",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -1051,7 +1051,7 @@
    "Kharkivska": {
     "name": "Харківська область",
     "description": "Харківська область - це великий освітньо-науковий центр із розвиненою промисловістю та багатою історією Слобожанщини.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/586-kharkivska-oblast",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -1120,7 +1120,7 @@
    "Khersonska": {
     "name": "Херсонська область",
     "description": "Херсонська область відома родючими землями, мальовничими лиманами та ароматними садами, де вирощують найсмачніші фрукти України.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/587-khersonska-oblast",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -1189,7 +1189,7 @@
    "Khmelnytska": {
     "name": "Хмельницька область",
     "description": "Хмельницька область славиться зеленою мальовничою природою, старовинними замками та смачними виноградниками, де народжуються ароматні вина.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/592-khmelnytska-oblast",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -1258,7 +1258,7 @@
    "Cherkaska": {
     "name": "Черкаська область",
     "description": "Черкаська область відома широкими степами та Дніпром, історичними козацькими місцями й родючими чорноземами, що дають багатий урожай.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/588-cherkaska-oblast",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -1327,7 +1327,7 @@
    "Chernivetska": {
     "name": "Чернівецька область",
     "description": "Чернівецька область — одна з найяскравіших і найатмосферніших частин України, що поєднує в собі мультикультурність, величні краєвиди Карпат, старовинну архітектуру та унікальні локальні традиції.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/591-chernivetska-oblast",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -1396,7 +1396,7 @@
    "Chernihivska": {
     "name": "Чернігівська область",
     "description": "Чернігівська область вирізняється стародавніми монастирями, густими лісами та річками, що створюють чарівні природні краєвиди.",
-    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/571-zhytomyrska-oblast",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/589-chernihivska-oblast",
     "qrCodePath": "/qr-code-mock.png",
     "tests": [
       {
@@ -1457,6 +1457,144 @@
       {
         "question": "Чорна рада – козацька чорна рада 1663 року відбулася у:",
         "options": ["Батурині ", "Києві", "Ніжині", "Чернігові"],
+        "correctAnswer": 2
+      }
+      
+    ]
+  },
+   "Kyivska": {
+    "name": "Київська область",
+    "description": "Київ – одне з найстаріших міст Європи. Саме з нього почалася історія створення нашої великої Батьківщини.",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/578-kyivska-oblast",
+    "qrCodePath": "/qr-code-mock.png",
+    "tests": [
+      {
+        "question": "Яка область розташована навколо Києва?",
+        "options": ["Львівська", "Київська", "Харківська","Одеська"],
+        "correctAnswer": 1
+      },
+      {
+        "question": "Яке місто є адміністративним центром Київської області?",
+        "options": ["Львів", "Київ", "Одеса", "Харків"],
+        "correctAnswer": 1
+      },
+      {
+        "question": "Хто зображений на гербі Києва?",
+        "options": ["Святий Юрій", "Архангел Михаїл", "Кий", "Святий Володимир"],
+        "correctAnswer": 1
+      },
+      {
+        "question": "Яка річка тече через Київщину?",
+        "options": ["Дніпро", "Дунай", "Південний Буг", "Дністер"],
+        "correctAnswer": 0
+      },
+      {
+        "question": "Вибери правильну пам’ятку Києва:",
+        "options": ["Софійський собор", "Піраміди", "Ейфелева вежа", "Колізей"],
+        "correctAnswer": 0
+      },
+      {
+        "question": "У якому місті знаходиться пам'ятник Батьківщина-Мати?",
+        "options": ["Київ", "Чернігів", "Львів", "Одеса"],
+        "correctAnswer": 0
+      },
+      {
+        "question": "Яка страва відома у всьому світі і походить із Києва?",
+        "options": ["Піца", "Котлета по-київськи", "Суші", "Борщ"],
+        "correctAnswer": 1
+      },
+      {
+        "question": "Яке дерево є неофіційним символом Києва?",
+        "options": ["Липа", "Каштан ", "Дуб", "Верба"],
+        "correctAnswer": 1
+      },
+      {
+        "question": "Який десерт названий на честь Києва?",
+        "options": ["Медовик", "Київський торт", "Імбирне печиво", "Чізкейк"],
+        "correctAnswer": 1
+      },
+      {
+        "question": "Музей під відкритим небом, колишня державна резиденція?",
+        "options": ["Феофанія", "Центральний парк", "Межигір’я", "Парк Слави"],
+        "correctAnswer": 2
+      },
+      {
+        "question": "Де знаходиться місто-музей з багатьма історичними пам’ятками?",
+        "options": ["Переяслав-Хмельницький", "Одеса", "Львів", "Харків"],
+        "correctAnswer": 0
+      },
+      {
+        "question": "Головна площа столиці, серце сучасного Києва?",
+        "options": ["Пішоходний міст", "Андріївський узвіз", "Майдан Незалежності", "Хрещатик"],
+        "correctAnswer": 2
+      }
+      
+    ]
+  },
+   "Lvivska": {
+    "name": "Львівська область",
+    "description": "Львівська область відома своєю багатою історією, архітектурою та культурою, що поєднує в собі традиції Західної України з європейським впливом.",
+    "detailsLink": "https://school16.org.ua/index.php/40-proekty-2025/581-lvivska-oblast",
+    "qrCodePath": "/qr-code-mock.png",
+    "tests": [
+      {
+        "question": "Який елемент на Гербі Львівської області символізує силу, владу, велич та спадкоємність Волинсько-Галицької держави?",
+        "options": ["Синій колір полотнища", "Золотий коронований лев", "Скеля, на якій стоїть лев","Золотий (жовтий) колір"],
+        "correctAnswer": 1
+      },
+      {
+        "question": "На крайньому заході України Львівська область займає частину Східноєвропейської рівнини, Передкарпаття та гірських масивів. До якого історико-культурного регіону вона належить?",
+        "options": ["Буковина", "Волинь", "Поділля", "Галичина"],
+        "correctAnswer": 3
+      },
+      {
+        "question": "Яка іноземна країна межує зі Львівською областю на заході, і кордон з якою є зовнішнім кордоном Європейського Союзу?",
+        "options": ["Словаччина", "Угорщина", "Польща", "Румунія"],
+        "correctAnswer": 2
+      },
+      {
+        "question": "Який відомий український діяч, поет, письменник та публіцист, про якого йдеться у матеріалі, народився у селі Нагуєвичі?",
+        "options": ["Андрей Шептицький", "Іван Франко", "Соломія Крушельницька", "Богдан Хмельницький"],
+        "correctAnswer": 1
+      },
+      {
+        "question": "Яка унікальна особливість будівництва згадується про Львівський оперний театр?",
+        "options": ["Він збудований на штучно насипаній горі", "Його збудовано на річці Полтва, яку сховали під землю", "Він повністю зведений з карпатського мармуру", "Його відтворено за кресленнями Леонардо да Вінчі"],
+        "correctAnswer": 1
+      },
+      {
+        "question": "Яка пам'ятка оборонної архітектури IX-XVI століть, розташована в Сколівських Бескидах, є унікальною наскельною фортецею?",
+        "options": ["Олеський замок", "Тустань", "Палац Потоцьких", "Підгорецький замок"],
+        "correctAnswer": 1
+      },
+      {
+        "question": "Яка зі страв є найпопулярнішим десертом Західної України, що готується з кисломолочного сиру і часто поливається шоколадом?",
+        "options": ["Флячки (Хляки)", "Банош", "Львівський сирник", "Пампушки"],
+        "correctAnswer": 2
+      },
+      {
+        "question": "Яка зі згаданих традиційних страв регіону описується як густий суп, що готується з довго відварених яловичих рубців та овочів?",
+        "options": ["Червоний борщ", "Зрази ", "Деруни", "Флячки (Хляки)"],
+        "correctAnswer": 3
+      },
+      {
+        "question": "На території якого природного парку, розташованого в Карпатах, знаходиться водоспад Кам'янка?",
+        "options": ["Яворівський національний природний парк", "Карпатський національний природний парк", "Національний природний парк «Сколівські Бескиди»", "Вижницький національний природний парк"],
+        "correctAnswer": 2
+      },
+      {
+        "question": "Залишки якого великого слов'янського городища, що за деякими версіями було столицею Білої Хорватії у IX–X століттях, розташовані у Львівській області?",
+        "options": ["Пліснеське городище", "Стільське городище", "Хортиця", "Княжа гора"],
+        "correctAnswer": 1
+      },
+      {
+        "question": "У якому розкішному палаці в стилі французького неоренесансу, збудованому в XIX столітті, нині розташований Музей європейського мистецтва?",
+        "options": ["Олеський замок", "Золочівський замок", "Палац Потоцьких", "Палац Сапіг"],
+        "correctAnswer": 2
+      },
+      {
+        "question": "Що, згідно з матеріалом, забезпечує значний туристичний та рекреаційний потенціал Львівської області?",
+        "options": ["Наявність єдиного в Україні порту на річці Західний Буг", "Статус провідного центру машинобудування та хімічної промисловості", "Унікальне географічне розташування, що поєднує рівнинні ландшафти з передгір'ям та гірською системою Українських Карпат", "Розташування найбільшого в Європі родовища кам'яного вугілля"],
         "correctAnswer": 2
       }
       

@@ -130,6 +130,18 @@
   position: relative;
 }
 
+/* GPU-accelerated hover effects for SVG paths */
+.interactive-svg svg path[name] {
+  cursor: pointer;
+  transition: fill 0.08s ease-out, filter 0.08s ease-out;
+  will-change: fill, filter;
+}
+
+.interactive-svg svg path[name]:hover {
+  fill: #4a7c5a !important;
+  filter: brightness(1.15);
+}
+
 /* Desktop centering only */
 @media (min-width: 1025px) {
   .interactive-svg {

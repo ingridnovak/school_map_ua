@@ -48,11 +48,36 @@
   padding: 40px;
 }
 
+.region-modal-title-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.region-title-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.region-title-icon.flag-icon {
+  width: 32px;
+  height: auto;
+}
+
+.region-title-icon.trident-icon {
+  width: 26px;
+  height: auto;
+}
+
 .region-modal-title {
   font-size: 32px;
   font-weight: 700;
   color: #2c3e50;
-  margin-bottom: 20px;
+  margin: 0;
   text-align: center;
 }
 
@@ -313,9 +338,26 @@
     padding: 24px 20px;
   }
 
-  .region-modal-title {
-    font-size: 26px;
+  .region-modal-title-wrapper {
+    gap: 8px;
     margin-bottom: 16px;
+  }
+
+  .region-title-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .region-title-icon.flag-icon {
+    width: 26px;
+  }
+
+  .region-title-icon.trident-icon {
+    width: 20px;
+  }
+
+  .region-modal-title {
+    font-size: 22px;
   }
 
   .region-modal-description {
