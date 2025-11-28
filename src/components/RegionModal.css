@@ -323,6 +323,12 @@
   border: 2px dashed #ccc;
 }
 
+.certificate-image{
+    width: 25rem;
+    margin: 2rem; 
+    border-radius: 12px;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .region-modal-overlay {
@@ -467,4 +473,169 @@
 
 .region-modal-container::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* Tests Already Passed Banner */
+.tests-passed-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-radius: 12px;
+  border: 1px solid #a7f3d0;
+  margin-bottom: 24px;
+}
+
+.tests-passed-icon {
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.tests-passed-content {
+  flex: 1;
+}
+
+.tests-passed-text {
+  font-size: 17px;
+  font-weight: 600;
+  color: #166534;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.tests-passed-suggestion {
+  font-size: 15px;
+  color: #15803d;
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .tests-passed-banner {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .tests-passed-text {
+    font-size: 15px;
+  }
+
+  .tests-passed-suggestion {
+    font-size: 14px;
+  }
+
+  .tests-passed-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* Donation Verification Styles */
+.donation-verification-section {
+  
+  margin: 20px 0;
+  padding: 24px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e8f5e9 100%);
+  border-radius: 16px;
+  border: 1px solid #e0e0e0;
+}
+
+/* Checking State */
+.donation-checking {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+}
+
+.donation-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e0e0e0;
+  border-top-color: #6f9c76;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.donation-checking-text {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+}
+
+/* Verified State */
+.donation-verified {
+  text-align: center;
+}
+
+.donation-success-icon {
+  margin-bottom: 16px;
+}
+
+.donation-success-text {
+  font-size: 17px;
+  color: #333;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+/* Pending State */
+.donation-pending {
+  text-align: center;
+}
+
+.donation-pending-icon {
+  margin-bottom: 16px;
+}
+
+.donation-pending-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #f59e0b;
+  margin: 0 0 16px 0;
+}
+
+.donation-pending-text {
+  font-size: 16px;
+  color: #555;
+  line-height: 1.7;
+  margin: 0 0 12px 0;
+}
+
+.donation-pending-note {
+  font-size: 15px;
+  color: #6f9c76;
+  font-weight: 600;
+  margin: 0 0 24px 0;
+  padding: 12px;
+  background: rgba(111, 156, 118, 0.1);
+  border-radius: 8px;
+}
+
+/* Mobile styles for donation verification */
+@media (max-width: 768px) {
+  .donation-verification-section {
+    padding: 20px 16px;
+  }
+
+  .donation-pending-title {
+    font-size: 20px;
+  }
+
+  .donation-pending-text,
+  .donation-pending-note {
+    font-size: 14px;
+  }
+
+  .donation-success-text {
+    font-size: 15px;
+  }
 }
