@@ -18,15 +18,48 @@ function App() {
   const [hasCertificate, setHasCertificate] = useState(false);
   const [certificateUrl, setCertificateUrl] = useState(null);
 
+  // Load user data from localStorage (immediate update)
+  const loadUserFromStorage = () => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const userData = localStorage.getItem('currentUser');
+
+    if (isLoggedIn && userData) {
+      const user = JSON.parse(userData);
+      setCurrentUser(user);
+
+      // Use saved avatar number
+      const avatarNumber = user.avatarNumber || 1;
+      const avatarPath = user.gender === 'male'
+        ? `/male-svg/${avatarNumber}.svg`
+        : `/female-svg/${avatarNumber}.svg`;
+      setUserAvatar(avatarPath);
+
+      // Check if user has certificate from cached data
+      setHasCertificate(user.hasCertificate || false);
+      setCertificateUrl(user.certificateUrl || null);
+
+      return true;
+    } else {
+      setCurrentUser(null);
+      setUserAvatar(null);
+      setHasCertificate(false);
+      setCertificateUrl(null);
+      return false;
+    }
+  };
+
   // Check if user is logged in and verify token on component mount
   useEffect(() => {
     const verifyAndLoadUser = async () => {
       const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
       const token = localStorage.getItem('token');
 
-      if (isLoggedIn && token) {
+      // First, load from localStorage immediately for instant UI update
+      const hasUser = loadUserFromStorage();
+
+      // Then verify with backend (in background)
+      if (isLoggedIn && token && hasUser) {
         try {
-          // Verify token with backend
           const result = await api.verifyToken();
           if (!result.data?.valid) {
             // Token invalid - clear auth data
@@ -37,30 +70,8 @@ function App() {
             setCertificateUrl(null);
             return;
           }
-        } catch (error) {
-          console.error('Token verification failed:', error);
-          // On error, still try to use cached data
-        }
 
-        const userData = localStorage.getItem('currentUser');
-        if (userData) {
-          const user = JSON.parse(userData);
-          setCurrentUser(user);
-
-          // Use saved avatar number
-          const avatarNumber = user.avatarNumber || 1;
-          const avatarPath = user.gender === 'male'
-            ? `/male-svg/${avatarNumber}.svg`
-            : `/female-svg/${avatarNumber}.svg`;
-          setUserAvatar(avatarPath);
-
-          // Check if user has certificate
-          const userHasCertificate = user.hasCertificate || false;
-          const userCertificateUrl = user.certificateUrl || null;
-          setHasCertificate(userHasCertificate);
-          setCertificateUrl(userCertificateUrl);
-
-          // Also check certificate eligibility from backend
+          // Check certificate eligibility from backend
           try {
             const eligibility = await api.checkCertificateEligibility();
             if (eligibility.data?.isEligible) {
@@ -69,13 +80,10 @@ function App() {
           } catch (error) {
             console.error('Error checking certificate eligibility:', error);
           }
+        } catch (error) {
+          console.error('Token verification failed:', error);
+          // On error, keep using cached data (already loaded above)
         }
-      } else {
-        // User is not logged in - reset to defaults
-        setCurrentUser(null);
-        setUserAvatar(null);
-        setHasCertificate(false);
-        setCertificateUrl(null);
       }
     };
 
@@ -157,12 +165,14 @@ function App() {
         >
           Your Adventures
         </button>
-        <button
-          className="tab-button auth-button"
-          onClick={() => setShowAuthModal(true)}
-        >
-          Увійти / Реєстрація
-        </button>
+        {!currentUser && (
+          <button
+            className="tab-button auth-button"
+            onClick={() => setShowAuthModal(true)}
+          >
+            Увійти / Реєстрація
+          </button>
+        )}
       </div>
 
       {activeTab === 'discovering' ? <DiscoveringUkraine /> : <YourAdventures />}
