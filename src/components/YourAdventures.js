@@ -4,6 +4,62 @@ import './YourAdventures.css';
 import AuthModal from './AuthModal';
 import regionData from '../data/regionData';
 import { loadSVG, debounce, throttle } from '../utils/mapUtils';
+import { api } from '../services/api';
+
+// Image compression utility - compresses images before upload
+const compressImage = (file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+
+        // Calculate new dimensions while maintaining aspect ratio
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to blob with compression
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              // Create a data URL for preview
+              const compressedReader = new FileReader();
+              compressedReader.onload = () => {
+                resolve({
+                  blob,
+                  dataUrl: compressedReader.result,
+                  originalSize: file.size,
+                  compressedSize: blob.size,
+                  name: file.name
+                });
+              };
+              compressedReader.readAsDataURL(blob);
+            } else {
+              reject(new Error('Failed to compress image'));
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = event.target.result;
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+};
 
 function YourAdventures() {
   const mapContainerRef = useRef(null);
@@ -24,7 +80,13 @@ function YourAdventures() {
   const [pins, setPins] = useState([]);
   const [currentText, setCurrentText] = useState('');
   const [currentName, setCurrentName] = useState('');
+  const [currentImages, setCurrentImages] = useState([]);
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingPins, setIsLoadingPins] = useState(false);
+  const [regionPinsFromApi, setRegionPinsFromApi] = useState([]);
   const [scrollOffset, setScrollOffset] = useState({ x: 0, y: 0 });
+  const fileInputRef = useRef(null);
 
   // Check if user is logged in and update ref
   useEffect(() => {
@@ -230,33 +292,113 @@ function YourAdventures() {
     setShowTextModal(true);
   }, []);
 
-  const handleTextSubmit = useCallback(() => {
+  // Handle image selection and compression
+  const handleImageSelect = useCallback(async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    // Limit to 5 images max
+    const remainingSlots = 5 - currentImages.length;
+    const filesToProcess = files.slice(0, remainingSlots);
+
+    if (filesToProcess.length === 0) {
+      alert('Максимум 5 зображень');
+      return;
+    }
+
+    setIsCompressing(true);
+
+    try {
+      const compressedImages = await Promise.all(
+        filesToProcess.map(file => compressImage(file))
+      );
+      setCurrentImages(prev => [...prev, ...compressedImages]);
+    } catch (error) {
+      console.error('Error compressing images:', error);
+      alert('Помилка при обробці зображень');
+    } finally {
+      setIsCompressing(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  }, [currentImages.length]);
+
+  // Remove image from selection
+  const handleRemoveImage = useCallback((index) => {
+    setCurrentImages(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleTextSubmit = useCallback(async () => {
     if (!currentText.trim()) return;
 
-    const regionPinsCount = pins.filter(p => p.region === selectedRegion).length;
-    const pinSpacing = 30;
-    const angle = (regionPinsCount * 60) * (Math.PI / 180);
-    const offsetX = Math.cos(angle) * pinSpacing;
-    const offsetY = Math.sin(angle) * pinSpacing;
+    setIsSubmitting(true);
 
-    const newPin = {
-      id: Date.now(),
-      region: selectedRegion,
-      pinType: selectedPinType,
-      text: currentText,
-      name: currentName,
-      x: clickPosition.x + offsetX,
-      y: clickPosition.y + offsetY,
-      index: regionPinsCount
-    };
+    try {
+      // Prepare pin data for API
+      const pinData = {
+        regionId: selectedRegion,
+        regionName: regionData[selectedRegion]?.text || selectedRegion,
+        pinType: selectedPinType === 'visited' ? 'visited' : 'want_to_visit',
+        description: currentText
+      };
 
-    setPins(prev => [...prev, newPin]);
-    setCurrentText('');
-    setCurrentName('');
-    setShowTextModal(false);
-    setSelectedRegion(null);
-    setSelectedPinType(null);
-  }, [currentText, currentName, pins, selectedRegion, selectedPinType, clickPosition]);
+      // Submit to backend - with or without images
+      if (currentImages.length > 0) {
+        // Convert compressed blobs to files for upload
+        const imageFiles = currentImages.map((img, index) => {
+          return new File([img.blob], `image_${index}.jpg`, { type: 'image/jpeg' });
+        });
+        await api.createPinWithImages(pinData, imageFiles);
+      } else {
+        await api.createPin(pinData);
+      }
+
+      // Also add to local state for immediate display (optimistic UI)
+      const regionPinsCount = pins.filter(p => p.region === selectedRegion).length;
+      const pinSpacing = 30;
+      const angle = (regionPinsCount * 60) * (Math.PI / 180);
+      const offsetX = Math.cos(angle) * pinSpacing;
+      const offsetY = Math.sin(angle) * pinSpacing;
+
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+      const newPin = {
+        id: Date.now(),
+        region: selectedRegion,
+        pinType: selectedPinType,
+        text: currentText,
+        name: currentName || currentUser.name || '',
+        images: currentImages.map(img => ({
+          dataUrl: img.dataUrl,
+          name: img.name
+        })),
+        x: clickPosition.x + offsetX,
+        y: clickPosition.y + offsetY,
+        index: regionPinsCount,
+        createdAt: new Date().toISOString(),
+        status: 'pending' // New pins are pending until verified
+      };
+
+      setPins(prev => [...prev, newPin]);
+
+      // Show success message
+      alert('Ваш пін буде видимий після перевірки адміністратором');
+
+      setCurrentText('');
+      setCurrentName('');
+      setCurrentImages([]);
+      setShowTextModal(false);
+      setSelectedRegion(null);
+      setSelectedPinType(null);
+    } catch (error) {
+      console.error('Error creating pin:', error);
+      alert(error.message || 'Помилка при створенні піна');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [currentText, currentName, currentImages, pins, selectedRegion, selectedPinType, clickPosition]);
 
   const handleModalClose = useCallback(() => {
     setShowPinModal(false);
@@ -267,6 +409,7 @@ function YourAdventures() {
     setSelectedPinType(null);
     setCurrentText('');
     setCurrentName('');
+    setCurrentImages([]);
   }, []);
 
   const handleRegisterClick = useCallback(() => {
@@ -274,10 +417,23 @@ function YourAdventures() {
     setShowAuthModal(true);
   }, []);
 
-  const handleViewImpressions = useCallback(() => {
+  const handleViewImpressions = useCallback(async () => {
     setShowPinModal(false);
     setShowImpressionsModal(true);
-  }, []);
+    setIsLoadingPins(true);
+
+    try {
+      // Load approved pins from the API for this region
+      const result = await api.getPinsByRegion(selectedRegion);
+      if (result.data?.items) {
+        setRegionPinsFromApi(result.data.items);
+      }
+    } catch (error) {
+      console.error('Error loading pins:', error);
+    } finally {
+      setIsLoadingPins(false);
+    }
+  }, [selectedRegion]);
 
   // Get pins for selected region (memoized)
   const selectedRegionPins = useMemo(() => {
@@ -380,14 +536,61 @@ function YourAdventures() {
               className="text-input"
               rows={6}
             />
+
+            {/* Image Upload Section */}
+            <div className="image-upload-section">
+              <label className="image-upload-label">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageSelect}
+                  className="image-input-hidden"
+                  disabled={isCompressing || currentImages.length >= 5}
+                />
+                <div className="image-upload-button">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                  <span>
+                    {isCompressing ? 'Обробка...' : `Додати фото (${currentImages.length}/5)`}
+                  </span>
+                </div>
+              </label>
+
+              {/* Image Previews */}
+              {currentImages.length > 0 && (
+                <div className="image-preview-grid">
+                  {currentImages.map((img, index) => (
+                    <div key={index} className="image-preview-item">
+                      <img src={img.dataUrl} alt={`Preview ${index + 1}`} />
+                      <button
+                        type="button"
+                        className="image-remove-button"
+                        onClick={() => handleRemoveImage(index)}
+                      >
+                        ✕
+                      </button>
+                      <span className="image-size-info">
+                        {Math.round(img.compressedSize / 1024)}KB
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="modal-buttons">
-              <button className="cancel-button" onClick={handleModalClose}>Cancel</button>
+              <button className="cancel-button" onClick={handleModalClose} disabled={isSubmitting}>Скасувати</button>
               <button
                 className="submit-button"
                 onClick={handleTextSubmit}
-                disabled={!currentText.trim()}
+                disabled={!currentText.trim() || isCompressing || isSubmitting}
               >
-                Add Pin
+                {isSubmitting ? 'Додавання...' : 'Додати пін'}
               </button>
             </div>
           </div>
@@ -398,22 +601,42 @@ function YourAdventures() {
       {showImpressionsModal && selectedRegion && (
         <div className="modal-overlay" onClick={handleModalClose}>
           <div className="modal-content impressions-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Impressions for {regionData[selectedRegion]?.text || selectedRegion}</h3>
+            <h3>Враження про {regionData[selectedRegion]?.text || selectedRegion}</h3>
             <div className="impressions-list">
-              {selectedRegionPins.map(pin => (
-                <div key={pin.id} className="impression-item">
-                  <div className="impression-header">
-                    <span className={`pin-badge ${pin.pinType}`}>
-                      {pin.pinType === 'visited' ? 'Already been here' : 'Would like to visit'}
-                    </span>
-                    {pin.name && <span className="impression-author">by {pin.name}</span>}
+              {isLoadingPins ? (
+                <div className="loading-spinner">Завантаження...</div>
+              ) : regionPinsFromApi.length > 0 ? (
+                regionPinsFromApi.map(pin => (
+                  <div key={pin.id} className="impression-item">
+                    <div className="impression-header">
+                      <span className={`pin-badge ${pin.pinType === 'visited' ? 'visited' : 'wantToVisit'}`}>
+                        {pin.pinType === 'visited' ? 'Вже був тут' : 'Хочу відвідати'}
+                      </span>
+                      {pin.userDisplayName && (
+                        <span className="impression-author">
+                          від {pin.userDisplayName}
+                        </span>
+                      )}
+                    </div>
+                    <div className="impression-text">{pin.description}</div>
+
+                    {/* Display pin images from API */}
+                    {pin.images && pin.images.length > 0 && (
+                      <div className="impression-images">
+                        {pin.images.map((imgUrl, imgIndex) => (
+                          <div key={imgIndex} className="impression-image-item">
+                            <img src={imgUrl} alt={`Фото ${imgIndex + 1}`} />
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <div className="impression-region">{regionData[pin.region]?.text || pin.region}</div>
-                  <div className="impression-text">{pin.text}</div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="no-impressions">Поки немає вражень для цього регіону</p>
+              )}
             </div>
-            <button className="cancel-button" onClick={handleModalClose}>Close</button>
+            <button className="cancel-button" onClick={handleModalClose}>Закрити</button>
           </div>
         </div>
       )}
