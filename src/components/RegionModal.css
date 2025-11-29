@@ -1,0 +1,641 @@
+.region-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  animation: fadeIn 0.3s ease;
+  padding: 20px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.region-modal-container {
+  background: white;
+  border-radius: 16px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.region-modal-content {
+  padding: 40px;
+}
+
+.region-modal-title-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.region-title-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.region-title-icon.flag-icon {
+  width: 32px;
+  height: auto;
+}
+
+.region-title-icon.trident-icon {
+  width: 26px;
+  height: auto;
+}
+
+.region-modal-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+  text-align: center;
+}
+
+.region-modal-description {
+  font-size: 18px;
+  line-height: 1.7;
+  color: #555;
+  margin-bottom: 30px;
+  text-align: justify;
+}
+
+.region-modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.region-modal-btn {
+  padding: 16px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.region-modal-btn.primary {
+  background: #6f9c76;
+  color: white;
+}
+
+.region-modal-btn.primary:hover {
+  background: #5a8060;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(111, 156, 118, 0.3);
+}
+
+.region-modal-btn.primary:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.region-modal-btn.cancel {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.region-modal-btn.cancel:hover {
+  background: #e0e0e0;
+}
+
+/* Test Content Styles */
+.test-content {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.test-questions {
+  margin-bottom: 30px;
+}
+
+.test-question {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  border-left: 4px solid #6f9c76;
+}
+
+.question-number {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6f9c76;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.question-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.question-image-container {
+  margin: 16px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.question-image {
+  max-width: 100%;
+  max-height: 400px;
+  width: auto;
+  height: auto;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+.question-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.option-label {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.option-label:hover {
+  border-color: #6f9c76;
+  background: #f5faf5;
+}
+
+.option-label.selected {
+  border-color: #6f9c76;
+  background: #e8f5e9;
+}
+
+.option-label input[type="radio"] {
+  margin-right: 12px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #6f9c76;
+}
+
+.option-text {
+  font-size: 16px;
+  color: #333;
+  flex: 1;
+}
+
+/* Test Results Styles */
+.test-results {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.results-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 30px;
+}
+
+.results-score {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.score-number {
+  font-size: 64px;
+  font-weight: 700;
+  color: #6f9c76;
+}
+
+.score-separator {
+  font-size: 48px;
+  color: #999;
+}
+
+.score-total {
+  font-size: 48px;
+  font-weight: 600;
+  color: #666;
+}
+
+.results-percentage {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.results-message {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 30px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+/* QR Content Styles */
+.qr-content {
+  text-align: center;
+}
+
+.qr-description {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.qr-code-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 30px;
+  min-height: 300px;
+}
+
+.qr-code-image {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.qr-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 300px;
+  height: 300px;
+  background: #f0f0f0;
+  border-radius: 12px;
+  font-size: 18px;
+  color: #999;
+  border: 2px dashed #ccc;
+}
+
+.certificate-image{
+    width: 25rem;
+    margin: 2rem; 
+    border-radius: 12px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .region-modal-overlay {
+    padding: 10px;
+  }
+
+  .region-modal-container {
+    max-height: 95vh;
+    border-radius: 12px;
+  }
+
+  .region-modal-content {
+    padding: 24px 20px;
+  }
+
+  .region-modal-title-wrapper {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .region-title-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .region-title-icon.flag-icon {
+    width: 26px;
+  }
+
+  .region-title-icon.trident-icon {
+    width: 20px;
+  }
+
+  .region-modal-title {
+    font-size: 22px;
+  }
+
+  .region-modal-description {
+    font-size: 16px;
+    margin-bottom: 24px;
+  }
+
+  .region-modal-btn {
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+
+  .test-question {
+    padding: 20px 16px;
+  }
+
+  .question-text {
+    font-size: 16px;
+  }
+
+  .option-text {
+    font-size: 15px;
+  }
+
+  .question-image {
+    max-height: 300px;
+  }
+
+  .results-title {
+    font-size: 24px;
+  }
+
+  .score-number {
+    font-size: 48px;
+  }
+
+  .score-separator {
+    font-size: 36px;
+  }
+
+  .score-total {
+    font-size: 36px;
+  }
+
+  .results-percentage {
+    font-size: 20px;
+  }
+
+  .results-message {
+    font-size: 16px;
+  }
+
+  .qr-code-image,
+  .qr-placeholder {
+    max-width: 250px;
+    width: 100%;
+  }
+
+  .qr-placeholder {
+    height: 250px;
+    font-size: 16px;
+  }
+}
+
+/* Auth Required Content Styles */
+.auth-required-content {
+  text-align: center;
+}
+
+.auth-required-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6f9c76 0%, #5a8060 100%);
+  color: white;
+  margin-bottom: 24px;
+}
+
+.auth-required-icon svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.auth-required-message {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+/* Scrollbar Styling */
+.region-modal-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.region-modal-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.region-modal-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.region-modal-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Tests Already Passed Banner */
+.tests-passed-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-radius: 12px;
+  border: 1px solid #a7f3d0;
+  margin-bottom: 24px;
+}
+
+.tests-passed-icon {
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.tests-passed-content {
+  flex: 1;
+}
+
+.tests-passed-text {
+  font-size: 17px;
+  font-weight: 600;
+  color: #166534;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.tests-passed-suggestion {
+  font-size: 15px;
+  color: #15803d;
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .tests-passed-banner {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .tests-passed-text {
+    font-size: 15px;
+  }
+
+  .tests-passed-suggestion {
+    font-size: 14px;
+  }
+
+  .tests-passed-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* Donation Verification Styles */
+.donation-verification-section {
+  
+  margin: 20px 0;
+  padding: 24px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e8f5e9 100%);
+  border-radius: 16px;
+  border: 1px solid #e0e0e0;
+}
+
+/* Checking State */
+.donation-checking {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+}
+
+.donation-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e0e0e0;
+  border-top-color: #6f9c76;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.donation-checking-text {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+}
+
+/* Verified State */
+.donation-verified {
+  text-align: center;
+}
+
+.donation-success-icon {
+  margin-bottom: 16px;
+}
+
+.donation-success-text {
+  font-size: 17px;
+  color: #333;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+/* Pending State */
+.donation-pending {
+  text-align: center;
+}
+
+.donation-pending-icon {
+  margin-bottom: 16px;
+}
+
+.donation-pending-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #f59e0b;
+  margin: 0 0 16px 0;
+}
+
+.donation-pending-text {
+  font-size: 16px;
+  color: #555;
+  line-height: 1.7;
+  margin: 0 0 12px 0;
+}
+
+.donation-pending-note {
+  font-size: 15px;
+  color: #6f9c76;
+  font-weight: 600;
+  margin: 0 0 24px 0;
+  padding: 12px;
+  background: rgba(111, 156, 118, 0.1);
+  border-radius: 8px;
+}
+
+/* Mobile styles for donation verification */
+@media (max-width: 768px) {
+  .donation-verification-section {
+    padding: 20px 16px;
+  }
+
+  .donation-pending-title {
+    font-size: 20px;
+  }
+
+  .donation-pending-text,
+  .donation-pending-note {
+    font-size: 14px;
+  }
+
+  .donation-success-text {
+    font-size: 15px;
+  }
+}

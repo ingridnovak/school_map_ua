@@ -1,0 +1,459 @@
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2400;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Content */
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-content h3 {
+  margin: 0 0 20px 0;
+  font-size: 22px;
+  color: #333;
+  text-align: center;
+}
+
+/* Pin Selection Buttons */
+.pin-options {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.pin-button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pin-button:hover {
+  border-color: #6f9c76;
+  background: #f8faf8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(111, 156, 118, 0.2);
+}
+
+.pin-button.visited:hover {
+  border-color: #dc3545;
+  background: #fff5f5;
+}
+
+.pin-button.want-to-visit:hover {
+  border-color: #28a745;
+  background: #f0fff4;
+}
+
+.pin-preview {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.pin-button span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+  text-align: center;
+}
+
+/* Text Input Modal */
+.text-modal {
+  max-width: 600px;
+}
+
+.name-input,
+.text-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  margin-bottom: 15px;
+  transition: border-color 0.2s ease;
+}
+
+.name-input:focus,
+.text-input:focus {
+  outline: none;
+  border-color: #6f9c76;
+}
+
+.text-input {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* Modal Buttons */
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.cancel-button,
+.submit-button,
+.view-impressions-button {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel-button {
+  background: #f0f0f0;
+  color: #666;
+  width: 100%;
+}
+
+.cancel-button:hover {
+  background: #e0e0e0;
+}
+
+.submit-button {
+  background: #6f9c76;
+  color: white;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: #5a8060;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(111, 156, 118, 0.3);
+}
+
+.submit-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.view-impressions-button {
+  background: #4a7c9e;
+  color: white;
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.view-impressions-button:hover {
+  background: #3a6c8e;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(74, 124, 158, 0.3);
+}
+
+/* Map Pins */
+.map-pin {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  z-index: 2400;
+  pointer-events: none;
+  animation: dropPin 0.5s ease;
+}
+
+@keyframes dropPin {
+  from {
+    transform: translate(-50%, -150%) scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -100%) scale(1);
+    opacity: 1;
+  }
+}
+
+.pin-icon {
+  width: 30px;
+  height: 30px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Adventure Cards */
+.adventure-card {
+  position: absolute;
+  background: white;
+  border-radius: 8px;
+  padding: 10px 14px;
+  max-width: 250px;
+  min-width: 220px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  z-index: 2500;
+  animation: slideIn 0.4s ease;
+  border-left: 4px solid #6f9c76;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.adventure-card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.pin-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pin-badge.visited {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.pin-badge.wantToVisit {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.region-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6f9c76;
+}
+
+.adventure-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #333;
+}
+
+.adventure-text {
+  font-size: 12px;
+  color: #555;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+/* Impressions Modal */
+.impressions-modal {
+  max-width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.impressions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.impressions-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.impressions-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.impressions-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.impressions-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.impression-item {
+  background: #f8f9fa;
+  border-left: 4px solid #6f9c76;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.impression-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateX(4px);
+}
+
+.impression-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.impression-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.impression-region {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6f9c76;
+  margin-bottom: 8px;
+}
+
+.impression-text {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+/* Auth Required Modal */
+.auth-required-modal {
+  text-align: center;
+  max-width: 420px;
+}
+
+.auth-required-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6f9c76 0%, #5a8060 100%);
+  color: white;
+  margin-bottom: 24px;
+}
+
+.auth-required-icon svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.auth-required-message {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.auth-required-modal .modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-required-modal .submit-button,
+.auth-required-modal .cancel-button {
+  width: 100%;
+}
+
+/* Responsive design for modals */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-content h3 {
+    font-size: 18px;
+  }
+
+  .pin-options {
+    flex-direction: column;
+  }
+
+  .pin-button {
+    width: 100%;
+  }
+
+  .text-modal {
+    max-width: 95%;
+  }
+
+  .impressions-modal {
+    max-width: 95%;
+    max-height: 85vh;
+  }
+
+  .impressions-list {
+    max-height: 55vh;
+  }
+
+  .map-pin {
+    z-index: 1500;
+  }
+
+  .pin-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .auth-required-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 20px;
+  }
+
+  .auth-required-icon svg {
+    width: 48px;
+    height: 48px;
+  }
+}
