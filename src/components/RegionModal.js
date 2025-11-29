@@ -2,32 +2,7 @@ import { useState, useEffect } from "react";
 import confetti from "canvas-confetti";
 import "./RegionModal.css";
 import regionsData from "../data/regionsData.json";
-
-// Mock function to check donation status - replace with real API call later
-const checkDonationStatus = async () => {
-  // Simulate API call delay
-  await new Promise((resolve) => setTimeout(resolve, 1500));
-
-  // TODO: Replace with actual backend call
-  // Example: const response = await fetch('/api/check-donation', { ... });
-  // return response.json();
-
-  // For now, return 'pending' since no backend exists
-  return { status: "verified" };
-};
-
-// Mock function to check if user has passed tests for a region - replace with real API call later
-const checkTestsPassed = async (regionKey) => {
-  // Simulate API call delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  // TODO: Replace with actual backend call
-  // Example: const response = await fetch(`/api/check-tests-passed/${regionKey}`, { ... });
-  // return response.json();
-
-  // For now, return false since no backend exists
-  return { passed: false };
-};
+import { api } from "../services/api";
 
 function RegionModal({ regionKey, onClose, onOpenAuth }) {
   const [modalState, setModalState] = useState("info"); // 'info', 'test', 'qr', 'auth-required'
@@ -39,30 +14,49 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
 
   const regionData = regionsData[regionKey];
 
-  // Check if user is logged in and if tests were already passed
+  // Check if user is logged in on mount
   useEffect(() => {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true";
     setIsLoggedIn(loggedIn);
+  }, []);
 
-    // Check if user already passed tests for this region
-    if (loggedIn) {
-      checkTestsPassed(regionKey).then((result) => {
-        setTestsAlreadyPassed(result.passed);
-      });
+  // Check if tests were already passed (only for logged in users)
+  useEffect(() => {
+    if (isLoggedIn) {
+      api.getPassedRegions()
+        .then((result) => {
+          const passedRegions = result.data?.passedRegions || [];
+          setTestsAlreadyPassed(passedRegions.includes(regionKey));
+        })
+        .catch((error) => {
+          console.error("Error checking passed regions:", error);
+          setTestsAlreadyPassed(false);
+        });
+    } else {
+      setTestsAlreadyPassed(false);
     }
-  }, [regionKey]);
+  }, [regionKey, isLoggedIn]);
 
-  // Check donation status when user passes test with >= 90%
+  // Check donation status when user passes test with 100%
   useEffect(() => {
     if (
       testResults &&
-      testResults.percentage >= 90 &&
+      testResults.percentage === 100 &&
       donationStatus === "idle"
     ) {
       setDonationStatus("checking");
-      checkDonationStatus().then((result) => {
-        setDonationStatus(result.status);
-      });
+      api.getDonationStatus()
+        .then((result) => {
+          if (result.data?.hasDonated && result.data?.status === "verified") {
+            setDonationStatus("verified");
+          } else {
+            setDonationStatus("pending");
+          }
+        })
+        .catch((error) => {
+          console.error("Error checking donation status:", error);
+          setDonationStatus("pending");
+        });
     }
   }, [testResults, donationStatus]);
 
@@ -75,7 +69,9 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
   };
 
   const handleTestClick = () => {
-    if (!isLoggedIn) {
+    // Check localStorage directly to avoid race conditions with state
+    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+    if (!loggedIn) {
       setModalState("auth-required");
       return;
     }
@@ -103,7 +99,7 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
     });
   };
 
-  const handleTestSubmit = () => {
+  const handleTestSubmit = async () => {
     let correct = 0;
     regionData.tests.forEach((test, index) => {
       if (selectedAnswers[index] === test.correctAnswer) {
@@ -126,6 +122,18 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
         origin: { y: 0.6 },
         zIndex: 4000,
       });
+
+      // Submit perfect score to backend
+      try {
+        await api.submitTest({
+          regionId: regionKey,
+          regionName: regionData.name,
+          score: correct,
+          totalQuestions: regionData.tests.length
+        });
+      } catch (error) {
+        console.error("Error submitting test result:", error);
+      }
     }
   };
 
@@ -281,16 +289,28 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
                   />
                   <div className="certificate-note">
                     Ви можете зберегти цей сертифікат як підтвердження вашої
-                    підтримки перейшовши за лінком знизу!
+                    підтримки натиснувши кнопку знизу!
                   </div>
-                  <a
-                    href="https://example.com/certificate-download"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="certificate-download-link"
+                  <button
+                    className="certificate-download-btn"
+                    onClick={async () => {
+                      try {
+                        const blob = await api.downloadCertificate();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = "certificate.pdf";
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        a.remove();
+                      } catch (error) {
+                        alert(error.message || "Помилка завантаження сертифікату");
+                      }
+                    }}
                   >
-                    Завантажити сертифікат
-                  </a>
+                    Завантажити сертифікат (PDF)
+                  </button>
                 </div>
               )}
 

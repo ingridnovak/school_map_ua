@@ -363,6 +363,128 @@
   word-wrap: break-word;
 }
 
+/* Image Upload Section */
+.image-upload-section {
+  margin-bottom: 15px;
+}
+
+.image-upload-label {
+  display: block;
+  cursor: pointer;
+}
+
+.image-input-hidden {
+  display: none;
+}
+
+.image-upload-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  background: #f9f9f9;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.image-upload-button:hover {
+  border-color: #6f9c76;
+  background: #f0f7f1;
+  color: #6f9c76;
+}
+
+.image-upload-button svg {
+  flex-shrink: 0;
+}
+
+/* Image Preview Grid */
+.image-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.image-preview-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.image-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-remove-button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(220, 53, 69, 0.9);
+  color: white;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.image-remove-button:hover {
+  background: #dc3545;
+  transform: scale(1.1);
+}
+
+.image-size-info {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Impression Images */
+.impression-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.impression-image-item {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.impression-image-item:hover {
+  transform: scale(1.05);
+}
+
+.impression-image-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* Auth Required Modal */
 .auth-required-modal {
   text-align: center;
@@ -455,5 +577,18 @@
   .auth-required-icon svg {
     width: 48px;
     height: 48px;
+  }
+
+  .image-preview-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .impression-images {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .image-upload-button {
+    padding: 10px 12px;
+    font-size: 13px;
   }
 }

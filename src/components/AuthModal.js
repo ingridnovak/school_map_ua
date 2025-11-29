@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./AuthModal.css";
 import classesData from "../data/classesData.json";
+import { api, saveAuthData } from "../services/api";
 
 function AuthModal({ onClose }) {
   const [activeTab, setActiveTab] = useState("register"); // 'register' or 'login'
@@ -41,6 +42,18 @@ function AuthModal({ onClose }) {
       return;
     }
 
+    // Validate name: only Cyrillic characters and must contain at least one space
+    const cyrillicPattern = /^[а-яА-ЯіІїЇєЄґҐ\s'-]+$/;
+    if (!cyrillicPattern.test(registerForm.name)) {
+      setError("Ім'я та прізвище повинні містити тільки кириличні символи");
+      return;
+    }
+
+    if (!registerForm.name.trim().includes(" ")) {
+      setError("Будь ласка, введіть ім'я та прізвище через пробіл");
+      return;
+    }
+
     // Additional validation for students - must select a class
     if (registerForm.userRole === "student" && !registerForm.studentClass) {
       setError("Будь ласка, обери свій клас");
@@ -59,51 +72,37 @@ function AuthModal({ onClose }) {
 
     setLoading(true);
 
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      const result = await api.register({
+        name: registerForm.name,
+        password: registerForm.password,
+        gender: registerForm.gender,
+        userType: registerForm.userRole,
+        studentClass: registerForm.studentClass,
+      });
 
-    // Mock successful registration (no real API call)
-    console.log("Mock registration data:", {
-      name: registerForm.name,
-      password: registerForm.password,
-      gender: registerForm.gender,
-      userRole: registerForm.userRole,
-      studentClass: registerForm.studentClass,
-    });
+      // Save auth data to localStorage
+      saveAuthData(result.data);
 
-    // Save user data to localStorage with avatar number
-    const avatarNumber = Math.floor(Math.random() * 10) + 1; // 1-10
-    const userData = {
-      name: registerForm.name,
-      gender: registerForm.gender,
-      userRole: registerForm.userRole,
-      studentClass:
-        registerForm.userRole === "student" ? registerForm.studentClass : null,
-      avatarNumber: avatarNumber,
-      registeredAt: new Date().toISOString(),
-    };
-    localStorage.setItem("registeredUser", JSON.stringify(userData));
+      setSuccess("Реєстрація успішна! Ласкаво просимо.");
+      setRegisterForm({
+        name: "",
+        password: "",
+        confirmPassword: "",
+        gender: "",
+        userRole: "",
+        studentClass: "",
+      });
 
-    // Auto-login user after registration
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("currentUser", JSON.stringify(userData));
-
-    // Simulate successful registration
-    setSuccess("Реєстрація успішна! Ласкаво просимо.");
-    setRegisterForm({
-      name: "",
-      password: "",
-      confirmPassword: "",
-      gender: "",
-      userRole: "",
-      studentClass: "",
-    });
-    setLoading(false);
-
-    // Close modal after 1.5 seconds
-    setTimeout(() => {
-      onClose();
-    }, 1500);
+      // Close modal after 1.5 seconds
+      setTimeout(() => {
+        onClose();
+      }, 1500);
+    } catch (err) {
+      setError(err.message || "Помилка при реєстрації");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Handle login
@@ -120,33 +119,27 @@ function AuthModal({ onClose }) {
 
     setLoading(true);
 
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      const result = await api.login({
+        name: loginForm.name,
+        password: loginForm.password,
+      });
 
-    // Mock successful login (no real API call)
-    console.log("Mock login data:", {
-      name: loginForm.name,
-      password: loginForm.password,
-    });
+      // Save auth data to localStorage
+      saveAuthData(result.data);
 
-    // Get registered user data from localStorage
-    const storedUser = localStorage.getItem("registeredUser");
-    if (storedUser) {
-      const userData = JSON.parse(storedUser);
-      // Mark user as logged in
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("currentUser", JSON.stringify(userData));
+      setSuccess("Вхід успішний! Ласкаво просимо.");
+      setLoginForm({ name: "", password: "" });
+
+      // Close modal after 1.5 seconds
+      setTimeout(() => {
+        onClose();
+      }, 1500);
+    } catch (err) {
+      setError(err.message || "Помилка при вході");
+    } finally {
+      setLoading(false);
     }
-
-    // Simulate successful login
-    setSuccess("Вхід успішний! Ласкаво просимо.");
-    setLoginForm({ name: "", password: "" });
-    setLoading(false);
-
-    // Close modal after 1.5 seconds
-    setTimeout(() => {
-      onClose();
-    }, 1500);
   };
 
   return (
@@ -198,7 +191,7 @@ function AuthModal({ onClose }) {
             <div className="auth-input-group">
               <label htmlFor="register-name" className="label-with-icon">
                 <img src="/icons/signature.png" alt="" className="label-icon" />
-                Ім'я користувача
+                Ім'я та прізвище користувача
               </label>
               <input
                 type="text"
@@ -214,7 +207,11 @@ function AuthModal({ onClose }) {
 
             <div className="auth-input-group">
               <label htmlFor="register-password" className="label-with-icon">
-                <img src="/icons/reset-password.png" alt="" className="label-icon" />
+                <img
+                  src="/icons/reset-password.png"
+                  alt=""
+                  className="label-icon"
+                />
                 Пароль
               </label>
               <div className="password-input-wrapper">
@@ -268,7 +265,11 @@ function AuthModal({ onClose }) {
 
             <div className="auth-input-group">
               <label htmlFor="register-confirm" className="label-with-icon">
-                <img src="/icons/reset-password.png" alt="" className="label-icon" />
+                <img
+                  src="/icons/reset-password.png"
+                  alt=""
+                  className="label-icon"
+                />
                 Підтвердіть пароль
               </label>
               <div className="password-input-wrapper">

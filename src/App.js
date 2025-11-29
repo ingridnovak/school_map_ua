@@ -6,6 +6,7 @@ import PhotoGallery from './components/PhotoGallery';
 import AboutSection from './components/AboutSection';
 import AuthModal from './components/AuthModal';
 import ConfirmModal from './components/ConfirmModal';
+import { api, clearAuthData } from './services/api';
 
 function App() {
   const [activeTab, setActiveTab] = useState('discovering');
@@ -17,35 +18,68 @@ function App() {
   const [hasCertificate, setHasCertificate] = useState(false);
   const [certificateUrl, setCertificateUrl] = useState(null);
 
-  // Check if user is logged in on component mount
+  // Check if user is logged in and verify token on component mount
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    if (isLoggedIn) {
-      const userData = localStorage.getItem('currentUser');
-      if (userData) {
-        const user = JSON.parse(userData);
-        setCurrentUser(user);
+    const verifyAndLoadUser = async () => {
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      const token = localStorage.getItem('token');
 
-        // Use saved avatar number
-        const avatarNumber = user.avatarNumber || 1;
-        const avatarPath = user.gender === 'male'
-          ? `/male-svg/${avatarNumber}.svg`
-          : `/female-svg/${avatarNumber}.svg`;
-        setUserAvatar(avatarPath);
+      if (isLoggedIn && token) {
+        try {
+          // Verify token with backend
+          const result = await api.verifyToken();
+          if (!result.data?.valid) {
+            // Token invalid - clear auth data
+            clearAuthData();
+            setCurrentUser(null);
+            setUserAvatar(null);
+            setHasCertificate(false);
+            setCertificateUrl(null);
+            return;
+          }
+        } catch (error) {
+          console.error('Token verification failed:', error);
+          // On error, still try to use cached data
+        }
 
-        // Check if user has certificate (will be set by backend)
-        const userHasCertificate = user.hasCertificate || false;
-        const userCertificateUrl = user.certificateUrl || null;
-        setHasCertificate(userHasCertificate);
-        setCertificateUrl(userCertificateUrl);
+        const userData = localStorage.getItem('currentUser');
+        if (userData) {
+          const user = JSON.parse(userData);
+          setCurrentUser(user);
+
+          // Use saved avatar number
+          const avatarNumber = user.avatarNumber || 1;
+          const avatarPath = user.gender === 'male'
+            ? `/male-svg/${avatarNumber}.svg`
+            : `/female-svg/${avatarNumber}.svg`;
+          setUserAvatar(avatarPath);
+
+          // Check if user has certificate
+          const userHasCertificate = user.hasCertificate || false;
+          const userCertificateUrl = user.certificateUrl || null;
+          setHasCertificate(userHasCertificate);
+          setCertificateUrl(userCertificateUrl);
+
+          // Also check certificate eligibility from backend
+          try {
+            const eligibility = await api.checkCertificateEligibility();
+            if (eligibility.data?.isEligible) {
+              setHasCertificate(true);
+            }
+          } catch (error) {
+            console.error('Error checking certificate eligibility:', error);
+          }
+        }
+      } else {
+        // User is not logged in - reset to defaults
+        setCurrentUser(null);
+        setUserAvatar(null);
+        setHasCertificate(false);
+        setCertificateUrl(null);
       }
-    } else {
-      // User is not logged in - reset to defaults
-      setCurrentUser(null);
-      setUserAvatar(null);
-      setHasCertificate(false);
-      setCertificateUrl(null);
-    }
+    };
+
+    verifyAndLoadUser();
   }, [showAuthModal]); // Re-check when auth modal closes
 
   const handleLogoutClick = () => {
@@ -53,10 +87,11 @@ function App() {
   };
 
   const handleLogoutConfirm = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('currentUser');
+    clearAuthData();
     setCurrentUser(null);
     setUserAvatar(null);
+    setHasCertificate(false);
+    setCertificateUrl(null);
     setShowLogoutConfirm(false);
   };
 
