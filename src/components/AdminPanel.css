@@ -238,6 +238,31 @@
   color: #dc2626;
 }
 
+/* Test status badges */
+.admin-user-tests {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #e5e7eb;
+  color: #6b7280;
+}
+
+.admin-user-tests.all-passed {
+  background: #d1fae5;
+  color: #059669;
+  font-weight: 600;
+}
+
+.admin-user-tests.some-passed {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.admin-user-tests.none-passed {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
 .admin-user-actions {
   display: flex;
   gap: 8px;
