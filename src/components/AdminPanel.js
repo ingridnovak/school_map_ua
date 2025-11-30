@@ -206,6 +206,44 @@ function AdminPanel({ onClose, userRole }) {
     }
   };
 
+  // Create a map of donations by userId for quick lookup
+  const donationsByUserId = donations.reduce((acc, donation) => {
+    const id = donation.userId;
+    if (id) {
+      acc[id] = donation;
+    }
+    return acc;
+  }, {});
+
+  // Helper function to get donation info for a user
+  const getUserDonationInfo = (user) => {
+    const userId = user.userId || user.id;
+    const freshDonation = donationsByUserId[userId];
+
+    if (freshDonation) {
+      // Use fresh donation data
+      const status = freshDonation.status || freshDonation.donationStatus || (freshDonation.hasDonated ? "verified" : "pending");
+      const isVerified = status === "verified" || freshDonation.hasDonated;
+      return {
+        status,
+        isVerified,
+        isPending: status === "pending",
+        isRejected: status === "rejected",
+        amount: freshDonation.amount || 0
+      };
+    }
+
+    // Fallback to user data
+    const status = user.donationStatus || (user.hasDonated ? "verified" : "none");
+    return {
+      status,
+      isVerified: user.hasDonated || user.donationStatus === "verified",
+      isPending: user.donationStatus === "pending",
+      isRejected: user.donationStatus === "rejected",
+      amount: user.donationAmount || user.donation?.amount || 0
+    };
+  };
+
   const filteredUsers = filterClass
     ? users.filter(u => u.studentClass === filterClass)
     : users;
@@ -229,48 +267,52 @@ function AdminPanel({ onClose, userRole }) {
       </div>
 
       <div className="admin-users-list">
-        {filteredUsers.map(user => (
-          <div key={user.userId} className="admin-user-card">
-            <div className="admin-user-info">
-              <div className="admin-user-name">{user.name}</div>
-              <div className="admin-user-details">
-                <span className="admin-user-type">
-                  {user.userType === "student" ? "Учень" : "Вчитель"}
-                </span>
-                {user.studentClass && (
-                  <span className="admin-user-class">{user.studentClass}</span>
-                )}
-                <span className={`admin-user-donation ${
-                  (user.hasDonated || user.donationStatus === "verified") ? "donated" :
-                  user.donationStatus === "pending" ? "pending" :
-                  user.donationStatus === "rejected" ? "rejected" : ""
-                }`}>
-                  {(user.hasDonated || user.donationStatus === "verified")
-                    ? `Донат: ${user.donationAmount || user.donation?.amount || 0} грн`
-                    : user.donationStatus === "pending"
-                    ? "Донат очікує"
-                    : user.donationStatus === "rejected"
-                    ? "Донат відхилено"
-                    : "Без донату"}
-                </span>
+        {filteredUsers.map(user => {
+          const donationInfo = getUserDonationInfo(user);
+
+          return (
+            <div key={user.userId} className="admin-user-card">
+              <div className="admin-user-info">
+                <div className="admin-user-name">{user.name}</div>
+                <div className="admin-user-details">
+                  <span className="admin-user-type">
+                    {user.userType === "student" ? "Учень" : "Вчитель"}
+                  </span>
+                  {user.studentClass && (
+                    <span className="admin-user-class">{user.studentClass}</span>
+                  )}
+                  <span className={`admin-user-donation ${
+                    donationInfo.isVerified ? "donated" :
+                    donationInfo.isPending ? "pending" :
+                    donationInfo.isRejected ? "rejected" : ""
+                  }`}>
+                    {donationInfo.isVerified
+                      ? `Донат: ${donationInfo.amount} грн`
+                      : donationInfo.isPending
+                      ? "Донат очікує"
+                      : donationInfo.isRejected
+                      ? "Донат відхилено"
+                      : "Без донату"}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="admin-user-actions">
-              <button
-                className="admin-btn edit"
-                onClick={() => handleEditUser(user)}
-              >
-                Редагувати
-              </button>
-              <button
-                className="admin-btn password"
-                onClick={() => handleResetPassword(user.userId, user.name)}
+              <div className="admin-user-actions">
+                <button
+                  className="admin-btn edit"
+                  onClick={() => handleEditUser(user)}
+                >
+                  Редагувати
+                </button>
+                <button
+                  className="admin-btn password"
+                  onClick={() => handleResetPassword(user.userId, user.name)}
               >
                 Змінити пароль
               </button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
