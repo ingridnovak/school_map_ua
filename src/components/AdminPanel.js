@@ -6,7 +6,7 @@ function AdminPanel({ onClose, userRole }) {
   const [activeTab, setActiveTab] = useState("users");
   const [users, setUsers] = useState([]);
   const [pendingPins, setPendingPins] = useState([]);
-  const [pendingDonations, setPendingDonations] = useState([]);
+  const [donations, setDonations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
@@ -18,12 +18,15 @@ function AdminPanel({ onClose, userRole }) {
 
   const isSuperadmin = userRole === "superadmin";
 
-  // Load users based on role
+  // Load users based on role - returns { users, managedClasses }
   const loadUsers = useCallback(async () => {
     if (isSuperadmin) {
       // Superadmin can see ALL users
       const usersResult = await api.getAllUsers();
-      return usersResult.data?.users || usersResult.data?.items || [];
+      return {
+        users: usersResult.data?.users || usersResult.data?.items || [],
+        managedClasses: []
+      };
     } else {
       // Admin can only see students in their managed classes
       const permResult = await api.getAdminPermissions();
@@ -32,7 +35,7 @@ function AdminPanel({ onClose, userRole }) {
 
       const managedClasses = perms?.managedClasses || [];
       if (managedClasses.length === 0) {
-        return [];
+        return { users: [], managedClasses: [] };
       }
 
       // Load students from each managed class
@@ -46,7 +49,7 @@ function AdminPanel({ onClose, userRole }) {
           console.error(`Error loading class ${className}:`, e);
         }
       }
-      return allUsers;
+      return { users: allUsers, managedClasses };
     }
   }, [isSuperadmin]);
 
@@ -55,7 +58,7 @@ function AdminPanel({ onClose, userRole }) {
     setError(null);
     try {
       // Load users based on role
-      const usersList = await loadUsers();
+      const { users: usersList, managedClasses: adminManagedClasses } = await loadUsers();
       setUsers(usersList);
 
       // Extract unique classes for filter
@@ -73,19 +76,35 @@ function AdminPanel({ onClose, userRole }) {
         console.error("Error loading pending pins:", e);
       }
 
-      // Load pending donations
+      // Load donations based on role
       try {
-        const donationsResult = await api.getPendingDonations();
-        setPendingDonations(donationsResult.data?.donations || []);
+        let allDonations = [];
+        if (isSuperadmin) {
+          // Superadmin gets ALL donations
+          const donationsResult = await api.getAllDonations();
+          allDonations = donationsResult.data?.donations || donationsResult.data?.items || [];
+        } else {
+          // Admin gets donations for their managed classes
+          for (const className of adminManagedClasses) {
+            try {
+              const classResult = await api.getDonationsByClass(className);
+              const classDonations = classResult.data?.donations || classResult.data?.items || [];
+              allDonations.push(...classDonations);
+            } catch (e) {
+              console.error(`Error loading donations for class ${className}:`, e);
+            }
+          }
+        }
+        setDonations(allDonations);
       } catch (e) {
-        console.error("Error loading pending donations:", e);
+        console.error("Error loading donations:", e);
       }
     } catch (err) {
       setError(err.message || "Помилка завантаження даних");
     } finally {
       setIsLoading(false);
     }
-  }, [loadUsers]);
+  }, [loadUsers, isSuperadmin]);
 
   // Load data on mount
   useEffect(() => {
@@ -297,58 +316,83 @@ function AdminPanel({ onClose, userRole }) {
     </div>
   );
 
-  const renderDonationsTab = () => (
-    <div className="admin-tab-content">
-      {pendingDonations.length === 0 ? (
-        <div className="admin-empty">Немає донатів на перевірку</div>
-      ) : (
-        <div className="admin-donations-list">
-          {pendingDonations.map(donation => (
-            <div key={donation.donationId || donation.id} className="admin-donation-card">
-              <div className="admin-donation-info">
-                <span className="admin-donation-user">{donation.userName || donation.userDisplayName}</span>
-                <span className="admin-donation-amount">
-                  {donation.amount ? `${donation.amount} грн` : "Сума не вказана"}
-                </span>
-              </div>
-              <div className="admin-donation-actions">
-                <input
-                  type="number"
-                  placeholder="Сума"
-                  className="admin-donation-input"
-                  id={`donation-amount-${donation.donationId || donation.id}`}
-                  defaultValue={donation.amount || ""}
-                />
-                <button
-                  className="admin-btn approve"
-                  onClick={() => {
-                    const input = document.getElementById(`donation-amount-${donation.donationId || donation.id}`);
-                    const amount = parseFloat(input.value) || 0;
-                    if (amount <= 0) {
-                      alert("Введіть суму донату більше 0");
-                      return;
-                    }
-                    handleVerifyDonation(donation.userId, amount);
-                  }}
-                >
-                  Підтвердити
-                </button>
-                <button
-                  className="admin-btn reject"
-                  onClick={() => {
-                    // Setting amount to 0 effectively rejects the donation
-                    handleVerifyDonation(donation.userId, 0);
-                  }}
-                >
-                  Відхилити
-                </button>
-              </div>
-            </div>
-          ))}
+  const renderDonationsTab = () => {
+    const pendingCount = donations.filter(d => d.status === "pending" || d.donationStatus === "pending").length;
+    const verifiedCount = donations.filter(d => d.status === "verified" || d.donationStatus === "verified" || d.hasDonated).length;
+
+    return (
+      <div className="admin-tab-content">
+        <div className="admin-donation-stats">
+          <span className="admin-stat">Всього: {donations.length}</span>
+          <span className="admin-stat verified">Підтверджено: {verifiedCount}</span>
+          <span className="admin-stat pending">Очікують: {pendingCount}</span>
         </div>
-      )}
-    </div>
-  );
+
+        {donations.length === 0 ? (
+          <div className="admin-empty">Немає донатів</div>
+        ) : (
+          <div className="admin-donations-list">
+            {donations.map(donation => {
+              const status = donation.status || donation.donationStatus || (donation.hasDonated ? "verified" : "pending");
+              const isVerified = status === "verified" || donation.hasDonated;
+              const isPending = status === "pending";
+              const isRejected = status === "rejected";
+
+              return (
+                <div key={donation.donationId || donation.userId || donation.id} className={`admin-donation-card ${status}`}>
+                  <div className="admin-donation-info">
+                    <span className="admin-donation-user">{donation.userName || donation.userDisplayName || donation.name}</span>
+                    <span className={`admin-donation-status ${status}`}>
+                      {isVerified ? "✓ Підтверджено" : isPending ? "⏳ Очікує" : isRejected ? "✗ Відхилено" : "—"}
+                    </span>
+                    <span className="admin-donation-amount">
+                      {donation.amount ? `${donation.amount} грн` : "Сума не вказана"}
+                    </span>
+                    {donation.studentClass && (
+                      <span className="admin-donation-class">{donation.studentClass}</span>
+                    )}
+                  </div>
+                  <div className="admin-donation-actions">
+                    <input
+                      type="number"
+                      placeholder="Сума"
+                      className="admin-donation-input"
+                      id={`donation-amount-${donation.donationId || donation.userId || donation.id}`}
+                      defaultValue={donation.amount || ""}
+                    />
+                    <button
+                      className="admin-btn approve"
+                      onClick={() => {
+                        const input = document.getElementById(`donation-amount-${donation.donationId || donation.userId || donation.id}`);
+                        const amount = parseFloat(input.value) || 0;
+                        if (amount <= 0) {
+                          alert("Введіть суму донату більше 0");
+                          return;
+                        }
+                        handleVerifyDonation(donation.userId, amount);
+                      }}
+                    >
+                      {isVerified ? "Оновити" : "Підтвердити"}
+                    </button>
+                    {!isVerified && (
+                      <button
+                        className="admin-btn reject"
+                        onClick={() => {
+                          handleVerifyDonation(donation.userId, 0);
+                        }}
+                      >
+                        Відхилити
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="admin-panel-overlay" onClick={onClose}>
@@ -389,8 +433,8 @@ function AdminPanel({ onClose, userRole }) {
             onClick={() => setActiveTab("donations")}
           >
             Донати
-            {pendingDonations.length > 0 && (
-              <span className="admin-tab-badge">{pendingDonations.length}</span>
+            {donations.length > 0 && (
+              <span className="admin-tab-count">{donations.length}</span>
             )}
           </button>
         </div>
