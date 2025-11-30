@@ -6,6 +6,7 @@ import PhotoGallery from './components/PhotoGallery';
 import AboutSection from './components/AboutSection';
 import AuthModal from './components/AuthModal';
 import ConfirmModal from './components/ConfirmModal';
+import AdminPanel from './components/AdminPanel';
 import { api, clearAuthData } from './services/api';
 
 function App() {
@@ -17,6 +18,8 @@ function App() {
   const [userAvatar, setUserAvatar] = useState(null);
   const [hasCertificate, setHasCertificate] = useState(false);
   const [certificateUrl, setCertificateUrl] = useState(null);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Load user data from localStorage (immediate update)
   const loadUserFromStorage = () => {
@@ -38,12 +41,18 @@ function App() {
       setHasCertificate(user.hasCertificate || false);
       setCertificateUrl(user.certificateUrl || null);
 
+      // Check if user is admin/superadmin and teacher
+      const isTeacherAdmin = user.userType === 'teacher' &&
+        (user.role === 'admin' || user.role === 'superadmin');
+      setIsAdmin(isTeacherAdmin);
+
       return true;
     } else {
       setCurrentUser(null);
       setUserAvatar(null);
       setHasCertificate(false);
       setCertificateUrl(null);
+      setIsAdmin(false);
       return false;
     }
   };
@@ -137,6 +146,19 @@ function App() {
                   <polyline points="10 9 9 9 8 9"/>
                 </svg>
                 Сертифікат
+              </button>
+            )}
+            {isAdmin && (
+              <button
+                className="admin-button"
+                onClick={() => setShowAdminPanel(true)}
+                title="Панель адміністратора"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
+                </svg>
+                Адмін
               </button>
             )}
           </>
@@ -249,6 +271,10 @@ function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {showAdminPanel && (
+        <AdminPanel onClose={() => setShowAdminPanel(false)} />
       )}
     </div>
   );
