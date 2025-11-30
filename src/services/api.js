@@ -108,6 +108,11 @@ export const api = {
     return handleResponse(response);
   },
 
+  getAllApprovedPins: async (limit = 1000, offset = 0) => {
+    const response = await fetch(`${API_BASE_URL}/adventures/pins/all?limit=${limit}&offset=${offset}`);
+    return handleResponse(response);
+  },
+
   getPinsByRegion: async (regionId, limit = 50, offset = 0, sortBy = 'newest') => {
     const response = await fetch(
       `${API_BASE_URL}/adventures/pins/${encodeURIComponent(regionId)}?limit=${limit}&offset=${offset}&sortBy=${sortBy}`
@@ -138,7 +143,7 @@ export const api = {
 
     // Add images (max 5)
     for (let i = 0; i < Math.min(imageFiles.length, 5); i++) {
-      formData.append('images', imageFiles[i]);
+      formData.append('images', imageFiles[i], imageFiles[i].name);
     }
 
     const response = await fetch(`${API_BASE_URL}/adventures/pins`, {
@@ -272,6 +277,30 @@ export const api = {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ approved })
+    });
+    return handleResponse(response);
+  },
+
+  getPinsByClass: async (className, limit = 100, offset = 0) => {
+    const response = await fetch(`${API_BASE_URL}/admin/pins/class/${encodeURIComponent(className)}?limit=${limit}&offset=${offset}`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  updatePin: async (pinId, updateData) => {
+    const response = await fetch(`${API_BASE_URL}/admin/pins/${pinId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(updateData)
+    });
+    return handleResponse(response);
+  },
+
+  deleteAdminPin: async (pinId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/pins/${pinId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
     });
     return handleResponse(response);
   },
