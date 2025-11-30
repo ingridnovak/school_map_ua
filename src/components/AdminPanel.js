@@ -138,11 +138,12 @@ function AdminPanel({ onClose, userRole }) {
 
       alert(`${statusMessage} для ${editingUser.name}`);
 
-      // Reload users to see updated data
-      const usersList = await loadUsers();
-      setUsers(usersList);
+      // Close modal first
       setEditingUser(null);
       setEditForm({});
+
+      // Force full data reload to get fresh data from backend
+      await loadData();
     } catch (err) {
       alert(err.message || "Помилка збереження");
     } finally {
@@ -179,10 +180,8 @@ function AdminPanel({ onClose, userRole }) {
   const handleVerifyDonation = async (donationId, status, amount) => {
     try {
       await api.verifyDonation(donationId, status, amount, "");
-      setPendingDonations(prev => prev.filter(d => d.donationId !== donationId));
-      // Reload users to update donation status
-      const usersList = await loadUsers();
-      setUsers(usersList);
+      // Force full data reload to get fresh data
+      await loadData();
     } catch (err) {
       alert(err.message || "Помилка верифікації");
     }
@@ -222,8 +221,18 @@ function AdminPanel({ onClose, userRole }) {
                 {user.studentClass && (
                   <span className="admin-user-class">{user.studentClass}</span>
                 )}
-                <span className={`admin-user-donation ${user.hasDonated ? "donated" : ""}`}>
-                  {user.hasDonated ? `Донат: ${user.donationAmount || 0} грн` : "Без донату"}
+                <span className={`admin-user-donation ${
+                  (user.hasDonated || user.donationStatus === "verified") ? "donated" :
+                  user.donationStatus === "pending" ? "pending" :
+                  user.donationStatus === "rejected" ? "rejected" : ""
+                }`}>
+                  {(user.hasDonated || user.donationStatus === "verified")
+                    ? `Донат: ${user.donationAmount || user.donation?.amount || 0} грн`
+                    : user.donationStatus === "pending"
+                    ? "Донат очікує"
+                    : user.donationStatus === "rejected"
+                    ? "Донат відхилено"
+                    : "Без донату"}
                 </span>
               </div>
             </div>
@@ -410,7 +419,18 @@ function AdminPanel({ onClose, userRole }) {
               <div className="admin-edit-info">
                 <p><strong>Тип:</strong> {editingUser.userType === "student" ? "Учень" : editingUser.userType === "teacher" ? "Вчитель" : "Гість"}</p>
                 {editingUser.studentClass && <p><strong>Клас:</strong> {editingUser.studentClass}</p>}
-                <p><strong>Поточний статус донату:</strong> {editingUser.hasDonated ? "Підтверджено" : "Не підтверджено"}</p>
+                <p><strong>Поточний статус донату:</strong> {
+                  (editingUser.hasDonated || editingUser.donationStatus === "verified")
+                    ? "Підтверджено"
+                    : editingUser.donationStatus === "pending"
+                    ? "Очікує перевірки"
+                    : editingUser.donationStatus === "rejected"
+                    ? "Відхилено"
+                    : "Не підтверджено"
+                }</p>
+                {(editingUser.donationAmount || editingUser.donation?.amount) > 0 && (
+                  <p><strong>Сума:</strong> {editingUser.donationAmount || editingUser.donation?.amount} грн</p>
+                )}
               </div>
 
               {isSuperadmin ? (
