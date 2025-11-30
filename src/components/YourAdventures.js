@@ -6,6 +6,24 @@ import regionData from '../data/regionData';
 import { loadSVG, debounce, throttle } from '../utils/mapUtils';
 import { api } from '../services/api';
 
+// Get the server base URL for images (without /api/v1 path)
+const getServerUrl = () => {
+  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080/api/v1';
+  // Remove /api/v1 suffix to get the base server URL
+  return apiUrl.replace(/\/api\/v\d+$/, '');
+};
+
+// Helper to get full image URL
+const getImageUrl = (imgUrl) => {
+  if (!imgUrl) return '';
+  // If already a full URL, return as is
+  if (imgUrl.startsWith('http://') || imgUrl.startsWith('https://')) {
+    return imgUrl;
+  }
+  // If relative path, prepend server URL
+  return `${getServerUrl()}${imgUrl.startsWith('/') ? '' : '/'}${imgUrl}`;
+};
+
 // Image compression utility - compresses images before upload
 const compressImage = (file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) => {
   return new Promise((resolve, reject) => {
@@ -68,6 +86,7 @@ function YourAdventures() {
   const svgElementRef = useRef(null);
   const pathCacheRef = useRef(new Map());
   const isLoggedInRef = useRef(false);
+  const [svgLoaded, setSvgLoaded] = useState(false);
 
   const [showPinModal, setShowPinModal] = useState(false);
   const [showTextModal, setShowTextModal] = useState(false);
@@ -93,6 +112,97 @@ function YourAdventures() {
     const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
     isLoggedInRef.current = loggedIn;
   }, [showAuthModal]);
+
+  // Load approved pins when SVG is loaded
+  useEffect(() => {
+    // Only run when SVG is loaded and pathCache is populated
+    if (!svgLoaded) return;
+
+    const loadApprovedPins = async () => {
+      try {
+        const pathCache = pathCacheRef.current;
+
+        // Fetch all approved pins in one call
+        const result = await api.getAllApprovedPins();
+        const pinsData = result.data?.items || [];
+
+        if (pinsData.length === 0) {
+          return;
+        }
+
+        // Group pins by region for positioning
+        const pinsByRegion = {};
+        pinsData.forEach(pin => {
+          const regionId = pin.regionId;
+          if (!pinsByRegion[regionId]) {
+            pinsByRegion[regionId] = [];
+          }
+          pinsByRegion[regionId].push(pin);
+        });
+
+        const allApprovedPins = [];
+
+        Object.entries(pinsByRegion).forEach(([regionId, regionPins]) => {
+          regionPins.forEach((pin, index) => {
+            let bbox = pathCache.get(regionId);
+
+            // Try to find bbox if not direct match
+            if (!bbox) {
+              for (const [key, value] of pathCache.entries()) {
+                if (key === regionId ||
+                    key.toLowerCase().includes(regionId.toLowerCase().replace('ska', '')) ||
+                    regionId.toLowerCase().includes(key.toLowerCase().replace('ska', ''))) {
+                  bbox = value;
+                  break;
+                }
+              }
+            }
+
+            // Calculate position within region - scale spacing based on region size
+            const centerX = bbox ? bbox.x + bbox.width / 2 : 200;
+            const centerY = bbox ? bbox.y + bbox.height / 2 : 200;
+
+            // Use 15% of the smaller dimension as max spacing, capped at 20px
+            const maxSpacing = bbox
+              ? Math.min(Math.min(bbox.width, bbox.height) * 0.15, 20)
+              : 15;
+
+            // For first pin, place at center; others spiral out
+            let offsetX = 0;
+            let offsetY = 0;
+            if (index > 0) {
+              const angle = (index * 72) * (Math.PI / 180); // 72° for 5-point distribution
+              const spacing = Math.min(maxSpacing * (1 + Math.floor(index / 5) * 0.5), maxSpacing * 1.5);
+              offsetX = Math.cos(angle) * spacing;
+              offsetY = Math.sin(angle) * spacing;
+            }
+
+            allApprovedPins.push({
+              ...pin,
+              region: regionId,
+              pinType: pin.pinType === 'visited' ? 'visited' : 'wantToVisit',
+              x: centerX + offsetX,
+              y: centerY + offsetY,
+              text: pin.description,
+              name: pin.userDisplayName || ''
+            });
+          });
+        });
+
+        if (allApprovedPins.length > 0) {
+          setPins(prev => {
+            const existingIds = new Set(prev.map(p => p.id));
+            const newPins = allApprovedPins.filter(p => !existingIds.has(p.id));
+            return [...prev, ...newPins];
+          });
+        }
+      } catch (error) {
+        console.error('Error loading approved pins:', error);
+      }
+    };
+
+    loadApprovedPins();
+  }, [svgLoaded]);
 
   // SVG setup effect - runs only once on mount
   useEffect(() => {
@@ -162,6 +272,9 @@ function YourAdventures() {
           text.textContent = label.text;
           svgElement.appendChild(text);
         });
+
+        // Mark SVG as loaded so pins can be fetched
+        setSvgLoaded(true);
 
         // Event handlers - CSS handles hover colors, JS only handles tooltip
         const handleMouseOver = (e) => {
@@ -264,13 +377,17 @@ function YourAdventures() {
 
   // Memoize pin positions to avoid recalculating on every render
   const pinPositions = useMemo(() => {
-    if (!svgElementRef.current || !mapContainerRef.current) return [];
+    if (!svgElementRef.current || !mapContainerRef.current || !svgLoaded || pins.length === 0) {
+      return [];
+    }
 
     const svgElement = svgElementRef.current;
     const ctm = svgElement.getScreenCTM();
     const mapRect = mapContainerRef.current.getBoundingClientRect();
 
-    if (!mapRect || !ctm) return [];
+    if (!mapRect || !ctm) {
+      return [];
+    }
 
     return pins.map(pin => {
       const point = svgElement.createSVGPoint();
@@ -284,7 +401,7 @@ function YourAdventures() {
         screenY: screenPoint.y - mapRect.top + scrollOffset.y
       };
     });
-  }, [pins, scrollOffset]);
+  }, [pins, scrollOffset, svgLoaded]);
 
   const handlePinSelection = useCallback((pinType) => {
     setSelectedPinType(pinType);
@@ -347,20 +464,41 @@ function YourAdventures() {
       // Submit to backend - with or without images
       if (currentImages.length > 0) {
         // Convert compressed blobs to files for upload
-        const imageFiles = currentImages.map((img, index) => {
-          return new File([img.blob], `image_${index}.jpg`, { type: 'image/jpeg' });
-        });
-        await api.createPinWithImages(pinData, imageFiles);
+        const imageFiles = [];
+        for (let i = 0; i < currentImages.length; i++) {
+          const img = currentImages[i];
+          if (img.blob) {
+            const file = new File([img.blob], `image_${i}.jpg`, { type: 'image/jpeg' });
+            imageFiles.push(file);
+          }
+        }
+        if (imageFiles.length > 0) {
+          await api.createPinWithImages(pinData, imageFiles);
+        } else {
+          await api.createPin(pinData);
+        }
       } else {
         await api.createPin(pinData);
       }
 
       // Also add to local state for immediate display (optimistic UI)
       const regionPinsCount = pins.filter(p => p.region === selectedRegion).length;
-      const pinSpacing = 30;
-      const angle = (regionPinsCount * 60) * (Math.PI / 180);
-      const offsetX = Math.cos(angle) * pinSpacing;
-      const offsetY = Math.sin(angle) * pinSpacing;
+
+      // Use 15% of the smaller dimension as max spacing, capped at 20px
+      const bbox = clickPosition.bbox;
+      const maxSpacing = bbox
+        ? Math.min(Math.min(bbox.width, bbox.height) * 0.15, 20)
+        : 15;
+
+      // For first pin, place at center; others spiral out
+      let offsetX = 0;
+      let offsetY = 0;
+      if (regionPinsCount > 0) {
+        const angle = (regionPinsCount * 72) * (Math.PI / 180);
+        const spacing = Math.min(maxSpacing * (1 + Math.floor(regionPinsCount / 5) * 0.5), maxSpacing * 1.5);
+        offsetX = Math.cos(angle) * spacing;
+        offsetY = Math.sin(angle) * spacing;
+      }
 
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
 
@@ -625,7 +763,7 @@ function YourAdventures() {
                       <div className="impression-images">
                         {pin.images.map((imgUrl, imgIndex) => (
                           <div key={imgIndex} className="impression-image-item">
-                            <img src={imgUrl} alt={`Фото ${imgIndex + 1}`} />
+                            <img src={getImageUrl(imgUrl)} alt={`Фото ${imgIndex + 1}`} />
                           </div>
                         ))}
                       </div>

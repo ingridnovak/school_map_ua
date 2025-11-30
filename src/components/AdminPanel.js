@@ -5,7 +5,9 @@ import "./AdminPanel.css";
 function AdminPanel({ onClose, userRole }) {
   const [activeTab, setActiveTab] = useState("users");
   const [users, setUsers] = useState([]);
-  const [pendingPins, setPendingPins] = useState([]);
+  const [pins, setPins] = useState([]);
+  const [editingPin, setEditingPin] = useState(null);
+  const [pinEditForm, setPinEditForm] = useState({});
   const [donations, setDonations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -68,12 +70,28 @@ function AdminPanel({ onClose, userRole }) {
       )].sort();
       setAvailableClasses(classes);
 
-      // Load pending pins
+      // Load pins based on role
       try {
-        const pinsResult = await api.getPendingPins();
-        setPendingPins(pinsResult.data?.items || []);
+        let allPins = [];
+        if (isSuperadmin) {
+          // Superadmin gets ALL pins
+          const pinsResult = await api.getAllPins();
+          allPins = pinsResult.data?.items || [];
+        } else {
+          // Admin gets pins for their managed classes
+          for (const className of adminManagedClasses) {
+            try {
+              const classResult = await api.getPinsByClass(className);
+              const classPins = classResult.data?.items || [];
+              allPins.push(...classPins);
+            } catch (e) {
+              console.error(`Error loading pins for class ${className}:`, e);
+            }
+          }
+        }
+        setPins(allPins);
       } catch (e) {
-        console.error("Error loading pending pins:", e);
+        console.error("Error loading pins:", e);
       }
 
       // Load donations based on role
@@ -189,9 +207,62 @@ function AdminPanel({ onClose, userRole }) {
   const handleVerifyPin = async (pinId, approved) => {
     try {
       await api.verifyPin(pinId, approved);
-      setPendingPins(prev => prev.filter(p => p.pinId !== pinId));
+      // Update pin status in local state
+      setPins(prev => prev.map(p => {
+        if ((p.id || p.pinId) === pinId) {
+          return { ...p, status: approved ? 'approved' : 'rejected' };
+        }
+        return p;
+      }));
     } catch (err) {
       alert(err.message || "Помилка верифікації");
+    }
+  };
+
+  const handleEditPin = (pin) => {
+    setEditingPin(pin);
+    setPinEditForm({
+      description: pin.description || '',
+      pinType: pin.pinType || 'visited',
+      status: pin.status || 'pending'
+    });
+  };
+
+  const handleSavePin = async () => {
+    if (!editingPin) return;
+
+    setIsSaving(true);
+    try {
+      const pinId = editingPin.id || editingPin.pinId;
+      await api.updatePin(pinId, pinEditForm);
+
+      // Update local state
+      setPins(prev => prev.map(p => {
+        if ((p.id || p.pinId) === pinId) {
+          return { ...p, ...pinEditForm };
+        }
+        return p;
+      }));
+
+      setEditingPin(null);
+      setPinEditForm({});
+      alert('Пін успішно оновлено');
+    } catch (err) {
+      alert(err.message || 'Помилка оновлення піна');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeletePin = async (pinId) => {
+    if (!window.confirm('Ви впевнені, що хочете видалити цей пін?')) return;
+
+    try {
+      await api.deleteAdminPin(pinId);
+      setPins(prev => prev.filter(p => (p.id || p.pinId) !== pinId));
+      alert('Пін видалено');
+    } catch (err) {
+      alert(err.message || 'Помилка видалення піна');
     }
   };
 
@@ -204,6 +275,44 @@ function AdminPanel({ onClose, userRole }) {
     } catch (err) {
       alert(err.message || "Помилка верифікації");
     }
+  };
+
+  // Create a map of donations by userId for quick lookup
+  const donationsByUserId = donations.reduce((acc, donation) => {
+    const id = donation.userId;
+    if (id) {
+      acc[id] = donation;
+    }
+    return acc;
+  }, {});
+
+  // Helper function to get donation info for a user
+  const getUserDonationInfo = (user) => {
+    const userId = user.userId || user.id;
+    const freshDonation = donationsByUserId[userId];
+
+    if (freshDonation) {
+      // Use fresh donation data
+      const status = freshDonation.status || freshDonation.donationStatus || (freshDonation.hasDonated ? "verified" : "pending");
+      const isVerified = status === "verified" || freshDonation.hasDonated;
+      return {
+        status,
+        isVerified,
+        isPending: status === "pending",
+        isRejected: status === "rejected",
+        amount: freshDonation.amount || 0
+      };
+    }
+
+    // Fallback to user data
+    const status = user.donationStatus || (user.hasDonated ? "verified" : "none");
+    return {
+      status,
+      isVerified: user.hasDonated || user.donationStatus === "verified",
+      isPending: user.donationStatus === "pending",
+      isRejected: user.donationStatus === "rejected",
+      amount: user.donationAmount || user.donation?.amount || 0
+    };
   };
 
   const filteredUsers = filterClass
@@ -229,92 +338,139 @@ function AdminPanel({ onClose, userRole }) {
       </div>
 
       <div className="admin-users-list">
-        {filteredUsers.map(user => (
-          <div key={user.userId} className="admin-user-card">
-            <div className="admin-user-info">
-              <div className="admin-user-name">{user.name}</div>
-              <div className="admin-user-details">
-                <span className="admin-user-type">
-                  {user.userType === "student" ? "Учень" : "Вчитель"}
-                </span>
-                {user.studentClass && (
-                  <span className="admin-user-class">{user.studentClass}</span>
-                )}
-                <span className={`admin-user-donation ${
-                  (user.hasDonated || user.donationStatus === "verified") ? "donated" :
-                  user.donationStatus === "pending" ? "pending" :
-                  user.donationStatus === "rejected" ? "rejected" : ""
-                }`}>
-                  {(user.hasDonated || user.donationStatus === "verified")
-                    ? `Донат: ${user.donationAmount || user.donation?.amount || 0} грн`
-                    : user.donationStatus === "pending"
-                    ? "Донат очікує"
-                    : user.donationStatus === "rejected"
-                    ? "Донат відхилено"
-                    : "Без донату"}
-                </span>
+        {filteredUsers.map(user => {
+          const donationInfo = getUserDonationInfo(user);
+
+          return (
+            <div key={user.userId} className="admin-user-card">
+              <div className="admin-user-info">
+                <div className="admin-user-name">{user.name}</div>
+                <div className="admin-user-details">
+                  <span className="admin-user-type">
+                    {user.userType === "student" ? "Учень" : "Вчитель"}
+                  </span>
+                  {user.studentClass && (
+                    <span className="admin-user-class">{user.studentClass}</span>
+                  )}
+                  <span className={`admin-user-donation ${
+                    donationInfo.isVerified ? "donated" :
+                    donationInfo.isPending ? "pending" :
+                    donationInfo.isRejected ? "rejected" : ""
+                  }`}>
+                    {donationInfo.isVerified
+                      ? `Донат: ${donationInfo.amount} грн`
+                      : donationInfo.isPending
+                      ? "Донат очікує"
+                      : donationInfo.isRejected
+                      ? "Донат відхилено"
+                      : "Без донату"}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="admin-user-actions">
-              <button
-                className="admin-btn edit"
-                onClick={() => handleEditUser(user)}
-              >
-                Редагувати
-              </button>
-              <button
-                className="admin-btn password"
-                onClick={() => handleResetPassword(user.userId, user.name)}
+              <div className="admin-user-actions">
+                <button
+                  className="admin-btn edit"
+                  onClick={() => handleEditUser(user)}
+                >
+                  Редагувати
+                </button>
+                <button
+                  className="admin-btn password"
+                  onClick={() => handleResetPassword(user.userId, user.name)}
               >
                 Змінити пароль
               </button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 
-  const renderPinsTab = () => (
-    <div className="admin-tab-content">
-      {pendingPins.length === 0 ? (
-        <div className="admin-empty">Немає пінів на перевірку</div>
-      ) : (
-        <div className="admin-pins-list">
-          {pendingPins.map(pin => (
-            <div key={pin.pinId} className="admin-pin-card">
-              <div className="admin-pin-header">
-                <span className="admin-pin-user">{pin.userDisplayName}</span>
-                <span className="admin-pin-region">{pin.regionName}</span>
-              </div>
-              <div className="admin-pin-description">{pin.description}</div>
-              {pin.images && pin.images.length > 0 && (
-                <div className="admin-pin-images">
-                  {pin.images.map((img, idx) => (
-                    <img key={idx} src={img} alt={`Pin ${idx + 1}`} />
-                  ))}
-                </div>
-              )}
-              <div className="admin-pin-actions">
-                <button
-                  className="admin-btn approve"
-                  onClick={() => handleVerifyPin(pin.pinId, true)}
-                >
-                  Схвалити
-                </button>
-                <button
-                  className="admin-btn reject"
-                  onClick={() => handleVerifyPin(pin.pinId, false)}
-                >
-                  Відхилити
-                </button>
-              </div>
-            </div>
-          ))}
+  const renderPinsTab = () => {
+    const pendingCount = pins.filter(p => p.status === 'pending').length;
+    const approvedCount = pins.filter(p => p.status === 'approved').length;
+    const rejectedCount = pins.filter(p => p.status === 'rejected').length;
+
+    return (
+      <div className="admin-tab-content">
+        <div className="admin-pin-stats">
+          <span className="admin-stat">Всього: {pins.length}</span>
+          <span className="admin-stat approved">Схвалено: {approvedCount}</span>
+          <span className="admin-stat pending">Очікують: {pendingCount}</span>
+          <span className="admin-stat rejected">Відхилено: {rejectedCount}</span>
         </div>
-      )}
-    </div>
-  );
+
+        {pins.length === 0 ? (
+          <div className="admin-empty">Немає пінів</div>
+        ) : (
+          <div className="admin-pins-list">
+            {pins.map(pin => {
+              const pinId = pin.id || pin.pinId;
+              const status = pin.status || 'pending';
+              const isApproved = status === 'approved';
+              const isPending = status === 'pending';
+              const isRejected = status === 'rejected';
+
+              return (
+                <div key={pinId} className={`admin-pin-card ${status}`}>
+                  <div className="admin-pin-header">
+                    <span className="admin-pin-user">{pin.userDisplayName}</span>
+                    <span className={`admin-pin-status ${status}`}>
+                      {isApproved ? '✓ Схвалено' : isPending ? '⏳ Очікує' : isRejected ? '✗ Відхилено' : '—'}
+                    </span>
+                    <span className="admin-pin-region">{pin.regionName}</span>
+                  </div>
+                  <div className="admin-pin-type">
+                    {pin.pinType === 'visited' ? '🔴 Був тут' : '🟢 Хочу відвідати'}
+                  </div>
+                  <div className="admin-pin-description">{pin.description}</div>
+                  {pin.images && pin.images.length > 0 && (
+                    <div className="admin-pin-images">
+                      {pin.images.map((img, idx) => (
+                        <img key={idx} src={img} alt={`Pin ${idx + 1}`} />
+                      ))}
+                    </div>
+                  )}
+                  <div className="admin-pin-actions">
+                    {isPending && (
+                      <>
+                        <button
+                          className="admin-btn approve"
+                          onClick={() => handleVerifyPin(pinId, true)}
+                        >
+                          Схвалити
+                        </button>
+                        <button
+                          className="admin-btn reject"
+                          onClick={() => handleVerifyPin(pinId, false)}
+                        >
+                          Відхилити
+                        </button>
+                      </>
+                    )}
+                    <button
+                      className="admin-btn edit"
+                      onClick={() => handleEditPin(pin)}
+                    >
+                      Редагувати
+                    </button>
+                    <button
+                      className="admin-btn delete"
+                      onClick={() => handleDeletePin(pinId)}
+                    >
+                      Видалити
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderDonationsTab = () => {
     const pendingCount = donations.filter(d => d.status === "pending" || d.donationStatus === "pending").length;
@@ -424,8 +580,8 @@ function AdminPanel({ onClose, userRole }) {
             onClick={() => setActiveTab("pins")}
           >
             Піни
-            {pendingPins.length > 0 && (
-              <span className="admin-tab-badge">{pendingPins.length}</span>
+            {pins.length > 0 && (
+              <span className="admin-tab-count">{pins.length}</span>
             )}
           </button>
           <button
@@ -524,6 +680,72 @@ function AdminPanel({ onClose, userRole }) {
                 <button
                   className="admin-btn save"
                   onClick={handleSaveUser}
+                  disabled={isSaving}
+                >
+                  {isSaving ? "Збереження..." : "Зберегти"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Pin Modal */}
+        {editingPin && (
+          <div className="admin-edit-overlay" onClick={() => setEditingPin(null)}>
+            <div className="admin-edit-modal" onClick={(e) => e.stopPropagation()}>
+              <h3 className="admin-edit-title">Редагування піна</h3>
+
+              <div className="admin-edit-info">
+                <p><strong>Користувач:</strong> {editingPin.userDisplayName}</p>
+                <p><strong>Регіон:</strong> {editingPin.regionName}</p>
+              </div>
+
+              <div className="admin-edit-form">
+                <div className="admin-edit-field">
+                  <label>Опис:</label>
+                  <textarea
+                    value={pinEditForm.description}
+                    onChange={(e) => setPinEditForm({ ...pinEditForm, description: e.target.value })}
+                    rows={4}
+                    placeholder="Опис піна"
+                  />
+                </div>
+
+                <div className="admin-edit-field">
+                  <label>Тип піна:</label>
+                  <select
+                    value={pinEditForm.pinType}
+                    onChange={(e) => setPinEditForm({ ...pinEditForm, pinType: e.target.value })}
+                  >
+                    <option value="visited">Був тут</option>
+                    <option value="want_to_visit">Хочу відвідати</option>
+                  </select>
+                </div>
+
+                <div className="admin-edit-field">
+                  <label>Статус:</label>
+                  <select
+                    value={pinEditForm.status}
+                    onChange={(e) => setPinEditForm({ ...pinEditForm, status: e.target.value })}
+                  >
+                    <option value="pending">Очікує перевірки</option>
+                    <option value="approved">Схвалено</option>
+                    <option value="rejected">Відхилено</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="admin-edit-actions">
+                <button
+                  className="admin-btn cancel"
+                  onClick={() => setEditingPin(null)}
+                  disabled={isSaving}
+                >
+                  Скасувати
+                </button>
+                <button
+                  className="admin-btn save"
+                  onClick={handleSavePin}
                   disabled={isSaving}
                 >
                   {isSaving ? "Збереження..." : "Зберегти"}

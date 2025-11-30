@@ -8,7 +8,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 3500;
   padding: 20px;
 }
 
@@ -480,6 +480,86 @@
   margin-bottom: 12px;
 }
 
+/* Pin Stats */
+.admin-pin-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-stat.approved {
+  color: #059669;
+}
+
+.admin-stat.rejected {
+  color: #dc2626;
+}
+
+/* Pin Status Indicators */
+.admin-pin-card.approved {
+  border-left: 4px solid #059669;
+  background: #f0fdf4;
+}
+
+.admin-pin-card.pending {
+  border-left: 4px solid #d97706;
+  background: #fffbeb;
+}
+
+.admin-pin-card.rejected {
+  border-left: 4px solid #dc2626;
+  background: #fef2f2;
+}
+
+.admin-pin-status {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.admin-pin-status.approved {
+  color: #059669;
+  background: #d1fae5;
+}
+
+.admin-pin-status.pending {
+  color: #d97706;
+  background: #fef3c7;
+}
+
+.admin-pin-status.rejected {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+.admin-pin-type {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.admin-pin-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.admin-btn.delete {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.admin-btn.delete:hover {
+  background: #fecaca;
+}
+
 /* Empty State */
 .admin-empty {
   text-align: center;
@@ -537,7 +617,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2100;
+  z-index: 3600;
 }
 
 .admin-edit-modal {
