@@ -349,7 +349,7 @@ function AdminPanel({ onClose, userRole }) {
                 <div className="admin-user-name">{user.name}</div>
                 <div className="admin-user-details">
                   <span className="admin-user-type">
-                    {user.userType === "student" ? "Учень" : "Вчитель"}
+                    {user.userType === "student" ? "Учень" : user.userType === "teacher" ? "Вчитель" : "Гість"}
                   </span>
                   {user.studentClass && (
                     <span className="admin-user-class">{user.studentClass}</span>
