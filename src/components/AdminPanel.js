@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { api } from "../services/api";
 import "./AdminPanel.css";
+import { useToast } from "./Toast";
 
 function AdminPanel({ onClose, userRole }) {
   const [activeTab, setActiveTab] = useState("users");
@@ -17,6 +18,7 @@ function AdminPanel({ onClose, userRole }) {
   const [filterClass, setFilterClass] = useState("");
   const [availableClasses, setAvailableClasses] = useState([]);
   const [permissions, setPermissions] = useState(null);
+  const toast = useToast();
 
   const isSuperadmin = userRole === "superadmin";
 
@@ -144,7 +146,7 @@ function AdminPanel({ onClose, userRole }) {
 
     // Validate based on status
     if (editForm.donationStatus === "verified" && editForm.donationAmount <= 0) {
-      alert("Для підтвердження донату введіть суму більше 0");
+      toast.warning("Для підтвердження донату введіть суму більше 0");
       return;
     }
 
@@ -172,7 +174,7 @@ function AdminPanel({ onClose, userRole }) {
         ? "Донат відхилено"
         : "Статус донату оновлено";
 
-      alert(`${statusMessage} для ${editingUser.name}`);
+      toast.success(`${statusMessage} для ${editingUser.name}`);
 
       // Close modal first
       setEditingUser(null);
@@ -181,7 +183,7 @@ function AdminPanel({ onClose, userRole }) {
       // Force full data reload to get fresh data from backend
       await loadData();
     } catch (err) {
-      alert(err.message || "Помилка збереження");
+      toast.error(err.message || "Помилка збереження");
     } finally {
       setIsSaving(false);
     }
@@ -192,15 +194,15 @@ function AdminPanel({ onClose, userRole }) {
     if (!newPassword) return;
 
     if (newPassword.length < 6) {
-      alert("Пароль повинен містити мінімум 6 символів");
+      toast.warning("Пароль повинен містити мінімум 6 символів");
       return;
     }
 
     try {
       await api.resetUserPassword(userId, newPassword);
-      alert("Пароль успішно змінено");
+      toast.success("Пароль успішно змінено");
     } catch (err) {
-      alert(err.message || "Помилка зміни пароля");
+      toast.error(err.message || "Помилка зміни пароля");
     }
   };
 
@@ -215,7 +217,7 @@ function AdminPanel({ onClose, userRole }) {
         return p;
       }));
     } catch (err) {
-      alert(err.message || "Помилка верифікації");
+      toast.error(err.message || "Помилка верифікації");
     }
   };
 
@@ -246,9 +248,9 @@ function AdminPanel({ onClose, userRole }) {
 
       setEditingPin(null);
       setPinEditForm({});
-      alert('Пін успішно оновлено');
+      toast.success('Пін успішно оновлено');
     } catch (err) {
-      alert(err.message || 'Помилка оновлення піна');
+      toast.error(err.message || 'Помилка оновлення піна');
     } finally {
       setIsSaving(false);
     }
@@ -260,9 +262,9 @@ function AdminPanel({ onClose, userRole }) {
     try {
       await api.deleteAdminPin(pinId);
       setPins(prev => prev.filter(p => (p.id || p.pinId) !== pinId));
-      alert('Пін видалено');
+      toast.success('Пін видалено');
     } catch (err) {
-      alert(err.message || 'Помилка видалення піна');
+      toast.error(err.message || 'Помилка видалення піна');
     }
   };
 
@@ -273,7 +275,7 @@ function AdminPanel({ onClose, userRole }) {
       // Force full data reload to get fresh data
       await loadData();
     } catch (err) {
-      alert(err.message || "Помилка верифікації");
+      toast.error(err.message || "Помилка верифікації");
     }
   };
 
@@ -364,6 +366,16 @@ function AdminPanel({ onClose, userRole }) {
                       : donationInfo.isRejected
                       ? "Донат відхилено"
                       : "Без донату"}
+                  </span>
+                  <span className={`admin-user-tests ${
+                    user.passedRegionsCount >= 26 ? "all-passed" :
+                    user.passedRegionsCount > 0 ? "some-passed" : "none-passed"
+                  }`}>
+                    {user.passedRegionsCount >= 26
+                      ? "✓ Всі тести"
+                      : user.passedRegionsCount > 0
+                      ? `Тести: ${user.passedRegionsCount}/26`
+                      : "Тести: 0/26"}
                   </span>
                 </div>
               </div>
@@ -522,7 +534,7 @@ function AdminPanel({ onClose, userRole }) {
                         const input = document.getElementById(`donation-amount-${donation.donationId || donation.userId || donation.id}`);
                         const amount = parseFloat(input.value) || 0;
                         if (amount <= 0) {
-                          alert("Введіть суму донату більше 0");
+                          toast.warning("Введіть суму донату більше 0");
                           return;
                         }
                         handleVerifyDonation(donation.userId, amount);

@@ -42,8 +42,8 @@ function AuthModal({ onClose }) {
       return;
     }
 
-    // Validate name: only Cyrillic characters and must contain at least one space
-    const cyrillicPattern = /^[а-яА-ЯіІїЇєЄґҐ\s'-]+$/;
+    // Validate name: Cyrillic characters with common symbols (hyphen, apostrophe, period, parentheses)
+    const cyrillicPattern = /^[а-яА-ЯіІїЇєЄґҐ\s''\-.,()]+$/;
     if (!cyrillicPattern.test(registerForm.name)) {
       setError("Ім'я та прізвище повинні містити тільки кириличні символи");
       return;
@@ -54,8 +54,8 @@ function AuthModal({ onClose }) {
       return;
     }
 
-    // Additional validation for students - must select a class
-    if (registerForm.userRole === "student" && !registerForm.studentClass) {
+    // Additional validation for students and guests - must select a class
+    if ((registerForm.userRole === "student" || registerForm.userRole === "guest") && !registerForm.studentClass) {
       setError("Будь ласка, обери свій клас");
       return;
     }
@@ -386,7 +386,7 @@ function AuthModal({ onClose }) {
               </div>
             </div>
 
-            {registerForm.userRole === "student" && (
+            {(registerForm.userRole === "student" || registerForm.userRole === "guest") && (
               <div className="auth-input-group class-select-container">
                 <label htmlFor="student-class">Обери свій клас</label>
                 <select

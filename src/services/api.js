@@ -63,7 +63,7 @@ export const api = {
         password: userData.password,
         gender: userData.gender,
         userType: userData.userType,
-        studentClass: userData.userType === 'student' ? userData.studentClass : null
+        studentClass: (userData.userType === 'student' || userData.userType === 'guest') ? userData.studentClass : null
       })
     });
     return handleResponse(response);
@@ -222,6 +222,17 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/donations/status`, {
       headers: getAuthHeaders()
     });
+    return handleResponse(response);
+  },
+
+  getRegionDonations: async (regionId) => {
+    const response = await fetch(`${API_BASE_URL}/donations/region/${encodeURIComponent(regionId)}`);
+    return handleResponse(response);
+  },
+
+  // Get total donations for a specific class (public endpoint)
+  getClassDonationsTotal: async (className) => {
+    const response = await fetch(`${API_BASE_URL}/donations/class/${encodeURIComponent(className)}/total`);
     return handleResponse(response);
   },
 

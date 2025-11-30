@@ -5,6 +5,7 @@ import AuthModal from './AuthModal';
 import regionData from '../data/regionData';
 import { loadSVG, debounce, throttle } from '../utils/mapUtils';
 import { api } from '../services/api';
+import { useToast } from './Toast';
 
 // Get the server base URL for images (without /api/v1 path)
 const getServerUrl = () => {
@@ -87,6 +88,7 @@ function YourAdventures() {
   const pathCacheRef = useRef(new Map());
   const isLoggedInRef = useRef(false);
   const [svgLoaded, setSvgLoaded] = useState(false);
+  const toast = useToast();
 
   const [showPinModal, setShowPinModal] = useState(false);
   const [showTextModal, setShowTextModal] = useState(false);
@@ -419,7 +421,7 @@ function YourAdventures() {
     const filesToProcess = files.slice(0, remainingSlots);
 
     if (filesToProcess.length === 0) {
-      alert('Максимум 5 зображень');
+      toast.warning('Максимум 5 зображень');
       return;
     }
 
@@ -432,7 +434,7 @@ function YourAdventures() {
       setCurrentImages(prev => [...prev, ...compressedImages]);
     } catch (error) {
       console.error('Error compressing images:', error);
-      alert('Помилка при обробці зображень');
+      toast.error('Помилка при обробці зображень');
     } finally {
       setIsCompressing(false);
       // Reset file input
@@ -440,7 +442,7 @@ function YourAdventures() {
         fileInputRef.current.value = '';
       }
     }
-  }, [currentImages.length]);
+  }, [currentImages.length, toast]);
 
   // Remove image from selection
   const handleRemoveImage = useCallback((index) => {
@@ -522,7 +524,7 @@ function YourAdventures() {
       setPins(prev => [...prev, newPin]);
 
       // Show success message
-      alert('Ваш пін буде видимий після перевірки адміністратором');
+      toast.success('Ваш пін буде видимий після перевірки адміністратором');
 
       setCurrentText('');
       setCurrentName('');
@@ -532,11 +534,11 @@ function YourAdventures() {
       setSelectedPinType(null);
     } catch (error) {
       console.error('Error creating pin:', error);
-      alert(error.message || 'Помилка при створенні піна');
+      toast.error(error.message || 'Помилка при створенні піна');
     } finally {
       setIsSubmitting(false);
     }
-  }, [currentText, currentName, currentImages, pins, selectedRegion, selectedPinType, clickPosition]);
+  }, [currentText, currentName, currentImages, pins, selectedRegion, selectedPinType, clickPosition, toast]);
 
   const handleModalClose = useCallback(() => {
     setShowPinModal(false);

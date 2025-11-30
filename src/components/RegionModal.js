@@ -2,7 +2,19 @@ import { useState, useEffect } from "react";
 import confetti from "canvas-confetti";
 import "./RegionModal.css";
 import regionsData from "../data/regionsData.json";
+import regionClassData from "../data/regionData";
 import { api } from "../services/api";
+import { useToast } from "./Toast";
+
+// Fisher-Yates shuffle algorithm
+const shuffleArray = (array) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
 
 function RegionModal({ regionKey, onClose, onOpenAuth }) {
   const [modalState, setModalState] = useState("info"); // 'info', 'test', 'qr', 'auth-required'
@@ -11,6 +23,12 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [donationStatus, setDonationStatus] = useState("idle"); // 'idle', 'checking', 'verified', 'pending'
   const [testsAlreadyPassed, setTestsAlreadyPassed] = useState(null); // null = loading, true/false = result
+  const [shuffledTests, setShuffledTests] = useState([]);
+  const [hasDonationVerified, setHasDonationVerified] = useState(false);
+  const [isDownloadingCertificate, setIsDownloadingCertificate] = useState(false);
+  const [regionDonationTotal, setRegionDonationTotal] = useState(null);
+  const [isLoadingDonations, setIsLoadingDonations] = useState(true);
+  const toast = useToast();
 
   const regionData = regionsData[regionKey];
 
@@ -19,6 +37,31 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true";
     setIsLoggedIn(loggedIn);
   }, []);
+
+  // Get the assigned class for this region
+  const assignedClass = regionClassData[regionKey]?.assignedClass;
+
+  // Fetch region donation total on mount (based on assigned class)
+  useEffect(() => {
+    if (!assignedClass) {
+      setIsLoadingDonations(false);
+      setRegionDonationTotal(0);
+      return;
+    }
+
+    setIsLoadingDonations(true);
+    api.getClassDonationsTotal(assignedClass)
+      .then((result) => {
+        setRegionDonationTotal(result.data?.totalAmount || 0);
+      })
+      .catch((error) => {
+        console.error("Error fetching class donations:", error);
+        setRegionDonationTotal(0);
+      })
+      .finally(() => {
+        setIsLoadingDonations(false);
+      });
+  }, [assignedClass]);
 
   // Check if tests were already passed (only for logged in users)
   useEffect(() => {
@@ -32,8 +75,20 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
           console.error("Error checking passed regions:", error);
           setTestsAlreadyPassed(false);
         });
+
+      // Also check donation status for certificate eligibility
+      api.getDonationStatus()
+        .then((result) => {
+          if (result.data?.hasDonated && result.data?.status === "verified") {
+            setHasDonationVerified(true);
+          }
+        })
+        .catch((error) => {
+          console.error("Error checking donation status:", error);
+        });
     } else {
       setTestsAlreadyPassed(false);
+      setHasDonationVerified(false);
     }
   }, [regionKey, isLoggedIn]);
 
@@ -75,6 +130,10 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
       setModalState("auth-required");
       return;
     }
+    // Shuffle tests each time test mode is opened
+    if (regionData?.tests) {
+      setShuffledTests(shuffleArray(regionData.tests));
+    }
     setModalState("test");
     setSelectedAnswers({});
     setTestResults(null);
@@ -101,16 +160,17 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
 
   const handleTestSubmit = async () => {
     let correct = 0;
-    regionData.tests.forEach((test, index) => {
+    // Use shuffledTests for checking answers
+    shuffledTests.forEach((test, index) => {
       if (selectedAnswers[index] === test.correctAnswer) {
         correct++;
       }
     });
-    const percentage = Math.round((correct / regionData.tests.length) * 100);
+    const percentage = Math.round((correct / shuffledTests.length) * 100);
 
     setTestResults({
       correct,
-      total: regionData.tests.length,
+      total: shuffledTests.length,
       percentage,
     });
 
@@ -160,8 +220,37 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
       </div>
       <p className="region-modal-description">{regionData.description}</p>
 
+      {/* Region Donation Total Display */}
+      <div className="region-donation-card">
+        <div className="region-donation-icon">
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </div>
+        <div className="region-donation-content">
+          <span className="region-donation-label">
+            Зібрано на підтримку ЗСУ
+            {assignedClass && <span className="region-donation-class">({assignedClass} клас)</span>}
+          </span>
+          {isLoadingDonations ? (
+            <span className="region-donation-amount loading">Завантаження...</span>
+          ) : (
+            <span className="region-donation-amount">
+              {regionDonationTotal?.toLocaleString('uk-UA')} грн
+            </span>
+          )}
+        </div>
+      </div>
+
       {testsAlreadyPassed && (
-        <div className="tests-passed-banner">
+        <div className={`tests-passed-banner ${hasDonationVerified ? 'with-certificate' : ''}`}>
           <div className="tests-passed-icon">
             <svg
               width="32"
@@ -179,9 +268,48 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
             <p className="tests-passed-text">
               Ти вже пройшов тести по цьому регіону успішно!
             </p>
-            <p className="tests-passed-suggestion">
-              Можливо, хочеш спробувати сили в іншому регіоні? Обирай будь-який!
-            </p>
+            {hasDonationVerified ? (
+              <>
+                <p className="tests-passed-certificate-text">
+                  Вітаємо! Ти також зробив донат на підтримку ЗСУ. Забирай свій сертифікат!
+                </p>
+                <button
+                  className="certificate-download-inline-btn"
+                  disabled={isDownloadingCertificate}
+                  onClick={async () => {
+                    setIsDownloadingCertificate(true);
+                    try {
+                      const blob = await api.downloadCertificate();
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = "certificate.pdf";
+                      document.body.appendChild(a);
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                      a.remove();
+                      toast.success("Сертифікат успішно завантажено!");
+                    } catch (error) {
+                      toast.error(error.message || "Помилка завантаження сертифікату");
+                    } finally {
+                      setIsDownloadingCertificate(false);
+                    }
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <path d="M12 18v-6" />
+                    <path d="M9 15l3 3 3-3" />
+                  </svg>
+                  {isDownloadingCertificate ? "Завантаження..." : "Завантажити сертифікат"}
+                </button>
+              </>
+            ) : (
+              <p className="tests-passed-suggestion">
+                Можливо, хочеш спробувати сили в іншому регіоні? Обирай будь-який!
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -304,8 +432,9 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
                         a.click();
                         window.URL.revokeObjectURL(url);
                         a.remove();
+                        toast.success("Сертифікат успішно завантажено!");
                       } catch (error) {
-                        alert(error.message || "Помилка завантаження сертифікату");
+                        toast.error(error.message || "Помилка завантаження сертифікату");
                       }
                     }}
                   >
@@ -358,10 +487,10 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
       ) : (
         <>
           <div className="test-questions">
-            {regionData.tests.map((test, index) => (
+            {shuffledTests.map((test, index) => (
               <div key={index} className="test-question">
                 <div className="question-number">
-                  Питання {index + 1} з {regionData.tests.length}
+                  Питання {index + 1} з {shuffledTests.length}
                 </div>
                 <div className="question-text">{test.question}</div>
 
@@ -406,7 +535,7 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
               className="region-modal-btn primary"
               onClick={handleTestSubmit}
               disabled={
-                Object.keys(selectedAnswers).length !== regionData.tests.length
+                Object.keys(selectedAnswers).length !== shuffledTests.length
               }
             >
               Підтвердити відповіді

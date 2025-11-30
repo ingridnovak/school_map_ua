@@ -89,6 +89,131 @@
   text-align: justify;
 }
 
+/* Region Donation Card */
+.region-donation-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 14px;
+  border: 2px solid #fbbf24;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(251, 191, 36, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.region-donation-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(251, 191, 36, 0.3);
+}
+
+.region-donation-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border-radius: 12px;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.region-donation-icon svg {
+  stroke: white;
+  fill: rgba(255, 255, 255, 0.2);
+}
+
+.region-donation-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.region-donation-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #92400e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.region-donation-class {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  background: rgba(245, 158, 11, 0.2);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #b45309;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.region-donation-amount {
+  font-size: 28px;
+  font-weight: 700;
+  color: #78350f;
+  line-height: 1.2;
+}
+
+.region-donation-amount.loading {
+  font-size: 16px;
+  font-weight: 500;
+  color: #a16207;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Mobile styles for region donation card */
+@media (max-width: 768px) {
+  .region-donation-card {
+    padding: 16px 18px;
+    gap: 14px;
+  }
+
+  .region-donation-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+  }
+
+  .region-donation-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .region-donation-label {
+    font-size: 12px;
+  }
+
+  .region-donation-class {
+    font-size: 10px;
+    padding: 1px 6px;
+    margin-left: 4px;
+  }
+
+  .region-donation-amount {
+    font-size: 22px;
+  }
+
+  .region-donation-amount.loading {
+    font-size: 14px;
+  }
+}
+
 .region-modal-buttons {
   display: flex;
   flex-direction: column;
@@ -511,6 +636,63 @@
   line-height: 1.5;
 }
 
+/* Tests Passed Banner with Certificate */
+.tests-passed-banner.with-certificate {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #fbbf24;
+}
+
+.tests-passed-banner.with-certificate .tests-passed-icon svg {
+  stroke: #d97706;
+}
+
+.tests-passed-banner.with-certificate .tests-passed-text {
+  color: #92400e;
+}
+
+.tests-passed-certificate-text {
+  font-size: 15px;
+  color: #a16207;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.certificate-download-inline-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.certificate-download-inline-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.certificate-download-inline-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.certificate-download-inline-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.certificate-download-inline-btn svg {
+  flex-shrink: 0;
+}
+
 @media (max-width: 768px) {
   .tests-passed-banner {
     padding: 16px;
@@ -528,6 +710,17 @@
   .tests-passed-icon svg {
     width: 28px;
     height: 28px;
+  }
+
+  .tests-passed-certificate-text {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .certificate-download-inline-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 20px;
   }
 }
 

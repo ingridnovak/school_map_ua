@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import * as pdfjsLib from "pdfjs-dist";
 import "./App.css";
 import DiscoveringUkraine from "./components/DiscoveringUkraine";
 import YourAdventures from "./components/YourAdventures";
@@ -7,7 +8,11 @@ import AboutSection from "./components/AboutSection";
 import AuthModal from "./components/AuthModal";
 import ConfirmModal from "./components/ConfirmModal";
 import AdminPanel from "./components/AdminPanel";
+import { useToast } from "./components/Toast";
 import { api, clearAuthData } from "./services/api";
+
+// Set worker source for pdf.js (using unpkg CDN)
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 function App() {
   const [activeTab, setActiveTab] = useState("discovering");
@@ -17,9 +22,12 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [userAvatar, setUserAvatar] = useState(null);
   const [hasCertificate, setHasCertificate] = useState(false);
-  const [certificateUrl, setCertificateUrl] = useState(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [certificatePreviewUrl, setCertificatePreviewUrl] = useState(null);
+  const [certificateBlob, setCertificateBlob] = useState(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const toast = useToast();
 
   // Load user data from localStorage (immediate update)
   const loadUserFromStorage = () => {
@@ -40,7 +48,6 @@ function App() {
 
       // Check if user has certificate from cached data
       setHasCertificate(user.hasCertificate || false);
-      setCertificateUrl(user.certificateUrl || null);
 
       // Check if user is admin/superadmin and teacher
       const isTeacherAdmin =
@@ -53,7 +60,6 @@ function App() {
       setCurrentUser(null);
       setUserAvatar(null);
       setHasCertificate(false);
-      setCertificateUrl(null);
       setIsAdmin(false);
       return false;
     }
@@ -78,7 +84,6 @@ function App() {
             setCurrentUser(null);
             setUserAvatar(null);
             setHasCertificate(false);
-            setCertificateUrl(null);
             return;
           }
 
@@ -101,6 +106,65 @@ function App() {
     verifyAndLoadUser();
   }, [showAuthModal]); // Re-check when auth modal closes
 
+  // Fetch certificate when modal opens (used for both preview and download)
+  useEffect(() => {
+    let isCancelled = false;
+
+    const loadCertificate = async () => {
+      if (!showCertificateModal || !hasCertificate) {
+        setCertificatePreviewUrl(null);
+        setCertificateBlob(null);
+        return;
+      }
+
+      setIsLoadingPreview(true);
+      try {
+        const blob = await api.downloadCertificate();
+        if (isCancelled) return;
+
+        setCertificateBlob(blob);
+
+        // Convert PDF blob to image using pdf.js
+        const arrayBuffer = await blob.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const page = await pdf.getPage(1);
+
+        // Render at higher scale for better quality
+        const scale = 2;
+        const viewport = page.getViewport({ scale });
+
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        await page.render({ canvasContext: context, viewport }).promise;
+
+        if (isCancelled) return;
+
+        // Convert canvas to image URL
+        const imageUrl = canvas.toDataURL("image/png");
+        setCertificatePreviewUrl(imageUrl);
+      } catch (error) {
+        console.error("Error loading certificate:", error);
+        if (!isCancelled) {
+          setCertificatePreviewUrl(null);
+          setCertificateBlob(null);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoadingPreview(false);
+        }
+      }
+    };
+
+    loadCertificate();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [showCertificateModal, hasCertificate]);
+
   const handleLogoutClick = () => {
     setShowLogoutConfirm(true);
   };
@@ -110,12 +174,28 @@ function App() {
     setCurrentUser(null);
     setUserAvatar(null);
     setHasCertificate(false);
-    setCertificateUrl(null);
     setShowLogoutConfirm(false);
   };
 
   const handleLogoutCancel = () => {
     setShowLogoutConfirm(false);
+  };
+
+  const handleDownloadCertificate = () => {
+    if (!certificateBlob) {
+      toast.error("Сертифікат ще завантажується, спробуйте пізніше");
+      return;
+    }
+
+    const url = window.URL.createObjectURL(certificateBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "certificate.pdf";
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+    toast.success("Сертифікат успішно завантажено!");
   };
 
   return (
@@ -271,45 +351,45 @@ function App() {
             </div>
             <h2 className="certificate-modal-title">Мій Сертифікат</h2>
             <p className="certificate-modal-message">
-              Вітаємо! Ви отримали сертифікат за проходження всіх тестів.
+              Вітаємо! Ви отримали сертифікат за проходження всіх тестів та підтримку ЗСУ.
             </p>
-            {certificateUrl ? (
-              <div className="certificate-preview">
-                <iframe
-                  src={certificateUrl}
-                  title="Certificate Preview"
-                  className="certificate-iframe"
+            <div className="certificate-preview">
+              {isLoadingPreview ? (
+                <div className="certificate-loading">
+                  <span>Завантаження превʼю...</span>
+                </div>
+              ) : certificatePreviewUrl ? (
+                <img
+                  src={certificatePreviewUrl}
+                  alt="Сертифікат"
+                  className="certificate-image"
                 />
-              </div>
-            ) : (
-              <p className="certificate-placeholder">
-                Сертифікат буде доступний після інтеграції з backend
-              </p>
-            )}
-            <div className="certificate-modal-buttons">
-              {certificateUrl && (
-                <a
-                  href={certificateUrl}
-                  download
-                  className="certificate-download-btn"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" y1="15" x2="12" y2="3" />
-                  </svg>
-                  Завантажити сертифікат
-                </a>
+              ) : (
+                <div className="certificate-error">
+                  <span>Не вдалося завантажити превʼю</span>
+                </div>
               )}
+            </div>
+            <div className="certificate-modal-buttons">
+              <button
+                className="certificate-download-btn"
+                onClick={handleDownloadCertificate}
+                disabled={isLoadingPreview || !certificateBlob}
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Завантажити сертифікат
+              </button>
               <button
                 className="certificate-close-btn"
                 onClick={() => setShowCertificateModal(false)}
