@@ -158,14 +158,24 @@ function YourAdventures() {
               }
             }
 
-            // Calculate position within region
-            const pinSpacing = 30;
-            const angle = (index * 60) * (Math.PI / 180);
-            const offsetX = Math.cos(angle) * pinSpacing;
-            const offsetY = Math.sin(angle) * pinSpacing;
-
+            // Calculate position within region - scale spacing based on region size
             const centerX = bbox ? bbox.x + bbox.width / 2 : 200;
             const centerY = bbox ? bbox.y + bbox.height / 2 : 200;
+
+            // Use 15% of the smaller dimension as max spacing, capped at 20px
+            const maxSpacing = bbox
+              ? Math.min(Math.min(bbox.width, bbox.height) * 0.15, 20)
+              : 15;
+
+            // For first pin, place at center; others spiral out
+            let offsetX = 0;
+            let offsetY = 0;
+            if (index > 0) {
+              const angle = (index * 72) * (Math.PI / 180); // 72° for 5-point distribution
+              const spacing = Math.min(maxSpacing * (1 + Math.floor(index / 5) * 0.5), maxSpacing * 1.5);
+              offsetX = Math.cos(angle) * spacing;
+              offsetY = Math.sin(angle) * spacing;
+            }
 
             allApprovedPins.push({
               ...pin,
@@ -473,10 +483,22 @@ function YourAdventures() {
 
       // Also add to local state for immediate display (optimistic UI)
       const regionPinsCount = pins.filter(p => p.region === selectedRegion).length;
-      const pinSpacing = 30;
-      const angle = (regionPinsCount * 60) * (Math.PI / 180);
-      const offsetX = Math.cos(angle) * pinSpacing;
-      const offsetY = Math.sin(angle) * pinSpacing;
+
+      // Use 15% of the smaller dimension as max spacing, capped at 20px
+      const bbox = clickPosition.bbox;
+      const maxSpacing = bbox
+        ? Math.min(Math.min(bbox.width, bbox.height) * 0.15, 20)
+        : 15;
+
+      // For first pin, place at center; others spiral out
+      let offsetX = 0;
+      let offsetY = 0;
+      if (regionPinsCount > 0) {
+        const angle = (regionPinsCount * 72) * (Math.PI / 180);
+        const spacing = Math.min(maxSpacing * (1 + Math.floor(regionPinsCount / 5) * 0.5), maxSpacing * 1.5);
+        offsetX = Math.cos(angle) * spacing;
+        offsetY = Math.sin(angle) * spacing;
+      }
 
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
 

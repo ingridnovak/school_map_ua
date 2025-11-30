@@ -1,31 +1,31 @@
-import { useState, useEffect } from 'react';
-import './PhotoGallery.css';
+import { useState, useEffect } from "react";
+import "./PhotoGallery.css";
 
 const photos = [
   {
-    src: '/carousel/cote-arms-ukrainian-flag.jpg',
-    alt: 'Coat of Arms and Ukrainian Flag'
+    src: "/carousel/cote-arms-ukrainian-flag.jpg",
+    alt: "Coat of Arms and Ukrainian Flag",
   },
   {
-    src: '/carousel/emotions-expression-ornament-relationship-flowers.jpg',
-    alt: 'Traditional Ukrainian Embroidery and Flowers'
+    src: "/carousel/emotions-expression-ornament-relationship-flowers.jpg",
+    alt: "Traditional Ukrainian Embroidery and Flowers",
   },
   {
-    src: '/carousel/mother-motherland-monument-sunset-kiev-ukraine.jpg',
-    alt: 'Mother Motherland Monument at Sunset in Kyiv'
+    src: "/carousel/mother-motherland-monument-sunset-kiev-ukraine.jpg",
+    alt: "Mother Motherland Monument at Sunset in Kyiv",
   },
   {
-    src: '/carousel/person-holding-ukrainian-flag.jpg',
-    alt: 'Person Holding Ukrainian Flag'
+    src: "/carousel/person-holding-ukrainian-flag.jpg",
+    alt: "Person Holding Ukrainian Flag",
   },
   {
-    src: '/carousel/woman-wearing-traditional-ukrainian-vyshyvanka.jpg',
-    alt: 'Woman Wearing Traditional Ukrainian Vyshyvanka'
+    src: "/carousel/woman-wearing-traditional-ukrainian-vyshyvanka.jpg",
+    alt: "Woman Wearing Traditional Ukrainian Vyshyvanka",
   },
   {
-    src: '/carousel/woman-with-national-flags-ukraine-her-cheeks.jpg',
-    alt: 'Woman with Ukrainian Flag on Her Cheeks'
-  }
+    src: "/carousel/woman-with-national-flags-ukraine-her-cheeks.jpg",
+    alt: "Woman with Ukrainian Flag on Her Cheeks",
+  },
 ];
 
 function PhotoGallery() {
@@ -66,7 +66,7 @@ function PhotoGallery() {
   return (
     <div className="gallery-section">
       <div className="gallery-container">
-        <h2 className="gallery-title">Photo Gallery</h2>
+        <h2 className="gallery-title">Фотогалерея</h2>
 
         <div className="carousel">
           <button
@@ -98,7 +98,7 @@ function PhotoGallery() {
           {photos.map((_, index) => (
             <button
               key={index}
-              className={`dot ${index === currentIndex ? 'active' : ''}`}
+              className={`dot ${index === currentIndex ? "active" : ""}`}
               onClick={() => goToSlide(index)}
               aria-label={`Go to photo ${index + 1}`}
             />
