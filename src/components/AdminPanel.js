@@ -103,22 +103,42 @@ function AdminPanel({ onClose, userRole }) {
   };
 
   const handleSaveUser = async () => {
-    if (!editingUser) return;
+    if (!editingUser || !isSuperadmin) return;
+
+    // Validate based on status
+    if (editForm.donationStatus === "verified" && editForm.donationAmount <= 0) {
+      alert("Для підтвердження донату введіть суму більше 0");
+      return;
+    }
+
     setIsSaving(true);
     try {
-      if (isSuperadmin) {
-        // Superadmin can set donation directly
-        await api.setUserDonation(
-          editingUser.userId || editingUser.id,
-          editForm.donationAmount,
-          `Змінено адміном: ${editForm.hasDonated ? "підтверджено" : "не підтверджено"}`
-        );
-      } else {
-        // Admin can only verify donations through the pending donations flow
-        // For now, just show a message
-        alert("Для зміни донату використовуйте вкладку 'Донати'");
-      }
-      // Reload users
+      const userId = editingUser.userId || editingUser.id;
+
+      // Build notes with status info
+      const statusText = {
+        pending: "Очікує перевірки",
+        verified: "Підтверджено",
+        rejected: "Відхилено"
+      }[editForm.donationStatus];
+
+      // Superadmin sets donation directly via the superadmin endpoint
+      // Note: Backend currently sets status to "verified" when amount > 0
+      await api.setUserDonation(
+        userId,
+        editForm.donationStatus === "rejected" ? 0 : editForm.donationAmount,
+        `Статус: ${statusText}. Встановлено суперадміністратором.`
+      );
+
+      const statusMessage = editForm.donationStatus === "verified"
+        ? `Донат ${editForm.donationAmount} грн підтверджено`
+        : editForm.donationStatus === "rejected"
+        ? "Донат відхилено"
+        : "Статус донату оновлено";
+
+      alert(`${statusMessage} для ${editingUser.name}`);
+
+      // Reload users to see updated data
       const usersList = await loadUsers();
       setUsers(usersList);
       setEditingUser(null);
@@ -387,48 +407,46 @@ function AdminPanel({ onClose, userRole }) {
             <div className="admin-edit-modal" onClick={(e) => e.stopPropagation()}>
               <h3 className="admin-edit-title">Редагування: {editingUser.name}</h3>
 
-              <div className="admin-edit-form">
-                <div className="admin-edit-field">
-                  <label>Ім'я:</label>
-                  <input
-                    type="text"
-                    value={editForm.name}
-                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  />
-                </div>
-
-                <div className="admin-edit-field">
-                  <label>Сума донату (грн):</label>
-                  <input
-                    type="number"
-                    value={editForm.donationAmount}
-                    onChange={(e) => setEditForm({ ...editForm, donationAmount: parseFloat(e.target.value) || 0 })}
-                  />
-                </div>
-
-                <div className="admin-edit-field checkbox">
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={editForm.hasDonated}
-                      onChange={(e) => setEditForm({ ...editForm, hasDonated: e.target.checked })}
-                    />
-                    Донат підтверджено
-                  </label>
-                </div>
-
-                <div className="admin-edit-field">
-                  <label>Статус донату:</label>
-                  <select
-                    value={editForm.donationStatus}
-                    onChange={(e) => setEditForm({ ...editForm, donationStatus: e.target.value })}
-                  >
-                    <option value="pending">Очікує</option>
-                    <option value="verified">Підтверджено</option>
-                    <option value="rejected">Відхилено</option>
-                  </select>
-                </div>
+              <div className="admin-edit-info">
+                <p><strong>Тип:</strong> {editingUser.userType === "student" ? "Учень" : editingUser.userType === "teacher" ? "Вчитель" : "Гість"}</p>
+                {editingUser.studentClass && <p><strong>Клас:</strong> {editingUser.studentClass}</p>}
+                <p><strong>Поточний статус донату:</strong> {editingUser.hasDonated ? "Підтверджено" : "Не підтверджено"}</p>
               </div>
+
+              {isSuperadmin ? (
+                <div className="admin-edit-form">
+                  <div className="admin-edit-field">
+                    <label>Сума донату (грн):</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={editForm.donationAmount}
+                      onChange={(e) => setEditForm({ ...editForm, donationAmount: parseFloat(e.target.value) || 0 })}
+                      placeholder="Введіть суму"
+                    />
+                  </div>
+
+                  <div className="admin-edit-field">
+                    <label>Статус донату:</label>
+                    <select
+                      value={editForm.donationStatus}
+                      onChange={(e) => setEditForm({ ...editForm, donationStatus: e.target.value })}
+                    >
+                      <option value="pending">Очікує перевірки</option>
+                      <option value="verified">Підтверджено</option>
+                      <option value="rejected">Відхилено</option>
+                    </select>
+                    <small className="admin-edit-hint">
+                      Статус впливає на відображення сертифікату користувачу
+                    </small>
+                  </div>
+                </div>
+              ) : (
+                <div className="admin-edit-notice">
+                  <p>Для підтвердження донату використовуйте вкладку "Донати"</p>
+                </div>
+              )}
 
               <div className="admin-edit-actions">
                 <button
@@ -438,13 +456,15 @@ function AdminPanel({ onClose, userRole }) {
                 >
                   Скасувати
                 </button>
-                <button
-                  className="admin-btn save"
-                  onClick={handleSaveUser}
-                  disabled={isSaving}
-                >
-                  {isSaving ? "Збереження..." : "Зберегти"}
-                </button>
+                {isSuperadmin && (
+                  <button
+                    className="admin-btn save"
+                    onClick={handleSaveUser}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? "Збереження..." : "Зберегти"}
+                  </button>
+                )}
               </div>
             </div>
           </div>
