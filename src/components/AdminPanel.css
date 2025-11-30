@@ -228,6 +228,16 @@
   color: #059669;
 }
 
+.admin-user-donation.pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.admin-user-donation.rejected {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
 .admin-user-actions {
   display: flex;
   gap: 8px;
