@@ -308,25 +308,66 @@ export const api = {
     return handleResponse(response);
   },
 
-  getAllUsers: async (limit = 100, offset = 0) => {
-    const response = await fetch(`${API_BASE_URL}/admin/users?limit=${limit}&offset=${offset}`, {
+  getDonationsByClass: async (className, limit = 50, offset = 0) => {
+    const response = await fetch(`${API_BASE_URL}/admin/donations/class/${encodeURIComponent(className)}?limit=${limit}&offset=${offset}`, {
       headers: getAuthHeaders()
     });
     return handleResponse(response);
   },
 
-  updateUser: async (userId, userData) => {
-    const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(userData)
+  getTestsByClass: async (className, limit = 50, offset = 0) => {
+    const response = await fetch(`${API_BASE_URL}/admin/tests/class/${encodeURIComponent(className)}?limit=${limit}&offset=${offset}`, {
+      headers: getAuthHeaders()
     });
     return handleResponse(response);
   },
 
-  deleteUser: async (userId) => {
-    const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
-      method: 'DELETE',
+  getGuestDonations: async (limit = 50, offset = 0) => {
+    const response = await fetch(`${API_BASE_URL}/admin/donations/guests?limit=${limit}&offset=${offset}`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  // ==================== SUPERADMIN ENDPOINTS ====================
+
+  getAllUsers: async (limit = 100, offset = 0) => {
+    const response = await fetch(`${API_BASE_URL}/superadmin/users?limit=${limit}&offset=${offset}`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  assignClassTeacher: async (teacherId, className, canEditGuests = false) => {
+    const response = await fetch(`${API_BASE_URL}/superadmin/class-teachers`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ teacherId, className, canEditGuests })
+    });
+    return handleResponse(response);
+  },
+
+  setUserDonation: async (userId, amount, notes = '') => {
+    const response = await fetch(`${API_BASE_URL}/superadmin/donations/user/${userId}/set`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ amount, notes })
+    });
+    return handleResponse(response);
+  },
+
+  getAllTestResults: async (limit = 50, offset = 0) => {
+    const response = await fetch(`${API_BASE_URL}/superadmin/tests?limit=${limit}&offset=${offset}`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getAllPins: async (limit = 50, offset = 0, regionId = '', status = '', sortBy = 'newest') => {
+    const params = new URLSearchParams({ limit, offset, sortBy });
+    if (regionId) params.append('regionId', regionId);
+    if (status) params.append('status', status);
+    const response = await fetch(`${API_BASE_URL}/superadmin/pins?${params}`, {
       headers: getAuthHeaders()
     });
     return handleResponse(response);

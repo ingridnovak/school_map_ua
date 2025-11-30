@@ -1,0 +1,1417 @@
+# School 16 Donates - Frontend Integration Guide
+
+This document provides comprehensive API documentation for integrating the React frontend with the Go backend.
+
+## Table of Contents
+
+1. [Base Configuration](#base-configuration)
+2. [Authentication](#authentication)
+3. [User Types & Roles](#user-types--roles)
+4. [API Endpoints](#api-endpoints)
+5. [Data Models](#data-models)
+6. [Error Handling](#error-handling)
+7. [Frontend Implementation Guide](#frontend-implementation-guide)
+8. [Image Upload Guidelines](#image-upload-guidelines)
+9. [Region-Class Mapping](#region-class-mapping)
+
+---
+
+## Base Configuration
+
+### API Base URL
+
+```javascript
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:8080/api/v1";
+```
+
+### Request Headers
+
+All authenticated requests must include:
+
+```javascript
+{
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${token}`
+}
+```
+
+For multipart form uploads (images):
+
+```javascript
+{
+  'Authorization': `Bearer ${token}`
+  // Note: Do NOT set Content-Type for multipart - browser sets it automatically with boundary
+}
+```
+
+### Response Format
+
+All API responses follow this structure:
+
+```typescript
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: {
+    code: string;
+    message: string;
+  };
+}
+
+interface PaginatedResponse<T> {
+  items: T[];
+  totalCount: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+}
+```
+
+---
+
+## Authentication
+
+### Register User
+
+**POST** `/api/v1/auth/register`
+
+**Request Body:**
+
+```json
+{
+  "name": "string (3-50 chars, unique)",
+  "password": "string (min 6 chars)",
+  "gender": "male" | "female",
+  "userType": "student" | "teacher" | "guest",
+  "studentClass": "string (required if userType is 'student', e.g., '6А', '10Б')"
+}
+```
+
+**Success Response (201):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "userId": "uuid",
+    "name": "string",
+    "gender": "male" | "female",
+    "userType": "student" | "teacher" | "guest",
+    "role": "user",
+    "studentClass": "string | null",
+    "avatarNumber": 1-10,
+    "token": "JWT token",
+    "hasCertificate": false,
+    "createdAt": "ISO 8601"
+  }
+}
+```
+
+### Login
+
+**POST** `/api/v1/auth/login`
+
+**Request Body:**
+
+```json
+{
+  "name": "string",
+  "password": "string"
+}
+```
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "userId": "uuid",
+    "name": "string",
+    "gender": "male" | "female",
+    "userType": "student" | "teacher" | "guest",
+    "role": "user" | "admin" | "superadmin",
+    "studentClass": "string | null",
+    "avatarNumber": 1-10,
+    "token": "JWT token",
+    "hasCertificate": true | false,
+    "createdAt": "ISO 8601"
+  }
+}
+```
+
+### Verify Token
+
+**GET** `/api/v1/auth/verify`
+_Requires Authentication_
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "valid": true,
+    "userId": "uuid",
+    "name": "string",
+    "role": "user" | "admin" | "superadmin",
+    "userType": "student" | "teacher" | "guest"
+  }
+}
+```
+
+### Get Profile
+
+**GET** `/api/v1/auth/profile`
+_Requires Authentication_
+
+### Change Password
+
+**POST** `/api/v1/auth/change-password`
+_Requires Authentication_
+
+**Request Body:**
+
+```json
+{
+  "oldPassword": "string",
+  "newPassword": "string (min 6 chars)"
+}
+```
+
+---
+
+## User Types & Roles
+
+### User Types (Selected during registration)
+
+| Type      | Description                                |
+| --------- | ------------------------------------------ |
+| `student` | School student, must have a class assigned |
+| `teacher` | School teacher                             |
+| `guest`   | School visitor/guest                       |
+
+### Roles (Managed by admins)
+
+| Role         | Description   | Permissions                           |
+| ------------ | ------------- | ------------------------------------- |
+| `user`       | Default role  | Basic access (tests, pins, donations) |
+| `admin`      | Class teacher | Manage students in assigned classes   |
+| `superadmin` | Full admin    | Manage all users, assign roles        |
+
+### Class Teacher Permissions
+
+- Class teachers (admin role) can manage:
+  - Students in their assigned classes
+  - Verify pins from their students
+  - Verify donations from their students
+  - Reset passwords for their students
+- Can optionally be given permission to manage guests
+
+### User Display Name Format
+
+For privacy, user names are displayed in the format: **"FirstName L."** (first name + first letter of surname)
+
+- Example: "Михайло Прізвище" → "Михайло П."
+- This applies to: pin listings, public displays, etc.
+
+---
+
+## API Endpoints
+
+### Adventures/Pins
+
+#### Get Region Summary (Public)
+
+**GET** `/api/v1/adventures/summary`
+
+Returns pin counts per region for the map.
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "regionId": "Kyivska",
+      "regionName": "Київська область",
+      "visitedCount": 15,
+      "wantVisitCount": 8,
+      "totalCount": 23
+    }
+  ]
+}
+```
+
+#### Get Pins by Region (Public)
+
+**GET** `/api/v1/adventures/pins/{regionId}?limit=50&offset=0&sortBy=newest`
+
+Returns only **approved** pins for public display.
+
+**Query Parameters:**
+
+- `limit` (default: 50)
+- `offset` (default: 0)
+- `sortBy`: `newest` | `oldest`
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "id": "uuid",
+        "userId": "uuid",
+        "regionId": "Kyivska",
+        "regionName": "Київська область",
+        "pinType": "visited" | "want_to_visit",
+        "description": "string",
+        "status": "approved",
+        "createdAt": "ISO 8601",
+        "userDisplayName": "Михайло П.",
+        "userGender": "male" | "female",
+        "avatarNumber": 1-10,
+        "images": ["https://storage.googleapis.com/school-16-donates-images/pins/..."]
+      }
+    ],
+    "totalCount": 100,
+    "limit": 50,
+    "offset": 0,
+    "hasMore": true
+  }
+}
+```
+
+#### Create Pin (JSON - without images)
+
+**POST** `/api/v1/adventures/pins`
+_Requires Authentication_
+
+**Request Body (JSON):**
+
+```json
+{
+  "regionId": "Kyivska",
+  "regionName": "Київська область",
+  "pinType": "visited" | "want_to_visit",
+  "description": "string (required, max 500 chars)"
+}
+```
+
+#### Create Pin (Multipart Form - with images)
+
+**POST** `/api/v1/adventures/pins`
+_Requires Authentication_
+
+**Request Body (multipart/form-data):**
+| Field | Type | Description |
+|-------|------|-------------|
+| `regionId` | string | Required. Region ID |
+| `regionName` | string | Required. Ukrainian region name |
+| `pinType` | string | Required. `visited` or `want_to_visit` |
+| `description` | string | Required. Max 500 chars |
+| `images` | file[] | Optional. **Max 5 images**. JPEG/PNG only. Max 10MB each |
+
+**Image Handling:**
+
+- Images are automatically compressed to max 1920x1080 pixels
+- All images are converted to JPEG (quality 85) for optimal file size
+- Images are stored on Google Cloud Storage
+- URLs returned in format: `https://storage.googleapis.com/school-16-donates-images/pins/{pinId}/{imageId}.jpg`
+
+**JavaScript Example:**
+
+```javascript
+const createPinWithImages = async (pinData, imageFiles) => {
+  const formData = new FormData();
+  formData.append("regionId", pinData.regionId);
+  formData.append("regionName", pinData.regionName);
+  formData.append("pinType", pinData.pinType);
+  formData.append("description", pinData.description);
+
+  // Add images (max 5)
+  for (let i = 0; i < Math.min(imageFiles.length, 5); i++) {
+    formData.append("images", imageFiles[i]);
+  }
+
+  const response = await fetch(`${API_BASE_URL}/adventures/pins`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      // Do NOT set Content-Type - browser sets it with boundary
+    },
+    body: formData,
+  });
+
+  return response.json();
+};
+```
+
+**Note:** Newly created pins have `status: "pending"` and are not visible publicly until verified by an admin.
+
+#### Get My Pins
+
+**GET** `/api/v1/adventures/my-pins`
+_Requires Authentication_
+
+#### Delete My Pin
+
+**DELETE** `/api/v1/adventures/pins/{pinId}`
+_Requires Authentication_
+
+Can only delete own pins.
+
+---
+
+### Tests
+
+#### Submit Test Result
+
+**POST** `/api/v1/tests/submit`
+_Requires Authentication_
+
+**Important:** Only submit when score is 12/12 (100%).
+
+**Request Body:**
+
+```json
+{
+  "regionId": "Kyivska",
+  "regionName": "Київська область",
+  "score": 12,
+  "totalQuestions": 12
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "result": {
+      "id": "uuid",
+      "userId": "uuid",
+      "regionId": "Kyivska",
+      "regionName": "Київська область",
+      "score": 12,
+      "totalQuestions": 12,
+      "completedAt": "ISO 8601"
+    },
+    "eligibleForCertificate": true | false
+  }
+}
+```
+
+**Note:** When `eligibleForCertificate` is `true`, the user has completed all requirements (all 25 tests passed + verified donation) and can now download their certificate.
+
+#### Get Test Progress
+
+**GET** `/api/v1/tests/progress`
+_Requires Authentication_
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "userId": "uuid",
+    "passedRegions": ["Kyivska", "Lvivska", ...],
+    "passedRegionCount": 15,
+    "totalRegions": 25,
+    "allTestsPassed": false,
+    "results": [...]
+  }
+}
+```
+
+#### Get Passed Regions
+
+**GET** `/api/v1/tests/passed-regions`
+_Requires Authentication_
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "passedRegions": ["Kyivska", "Lvivska"],
+    "count": 2,
+    "total": 25
+  }
+}
+```
+
+#### Delete Test Result (Retest)
+
+**DELETE** `/api/v1/tests/results/{regionId}`
+_Requires Authentication_
+
+Allows user to retake a test by removing the previous result.
+
+---
+
+### Donations
+
+#### Submit Donation Claim
+
+**POST** `/api/v1/donations/submit`
+_Requires Authentication_
+
+**Request Body:**
+
+```json
+{
+  "transactionId": "string (optional)",
+  "donatedAt": "ISO 8601 (optional)"
+}
+```
+
+**Note:** Creates a pending donation that requires admin verification.
+
+#### Get Donation Status
+
+**GET** `/api/v1/donations/status`
+_Requires Authentication_
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "hasDonated": true,
+    "status": "pending" | "verified" | "rejected",
+    "donation": {
+      "id": "uuid",
+      "amount": 100.00,
+      "status": "verified",
+      "verifiedAt": "ISO 8601"
+    }
+  }
+}
+```
+
+---
+
+### Certificates
+
+Certificates are generated **in real-time** as PDF files. They are not stored on disk - each request generates a fresh PDF.
+
+#### Get My Certificate Info
+
+**GET** `/api/v1/certificates/my-certificate`
+_Requires Authentication_
+
+Returns metadata about the certificate (if one has been issued).
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "certificateId": "uuid",
+    "userName": "Михайло Прізвище",
+    "issuedAt": "ISO 8601"
+  }
+}
+```
+
+#### Check Eligibility
+
+**GET** `/api/v1/certificates/eligibility`
+_Requires Authentication_
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "userId": "uuid",
+    "hasDonated": true,
+    "hasPassedTest": true,
+    "passedCount": 5,
+    "totalRegions": 25,
+    "isEligible": true,
+    "hasCertificate": false
+  }
+}
+```
+
+**Note:** `isEligible` is `true` when `hasDonated && hasPassedTest` (at least 1 region passed).
+
+#### Generate/Download Certificate
+
+**POST** `/api/v1/certificates/generate`
+_Requires Authentication_
+
+**Returns:** PDF file directly (Content-Type: application/pdf)
+
+This endpoint generates and streams the certificate PDF directly. Handle the response as a blob:
+
+```javascript
+const downloadCertificate = async () => {
+  const response = await fetch(`${API_BASE_URL}/certificates/generate`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error?.message || "Failed to generate certificate");
+  }
+
+  // Download as file
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "certificate.pdf";
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  a.remove();
+};
+```
+
+**Alternative:** **GET** `/api/v1/certificates/download` - Same functionality, also streams PDF directly.
+
+---
+
+### Admin Endpoints
+
+All admin endpoints require `role: admin` or `role: superadmin`.
+
+#### Get Permissions
+
+**GET** `/api/v1/admin/permissions`
+
+Returns current admin's permissions and managed classes.
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "userId": "uuid",
+    "role": "admin",
+    "userType": "teacher",
+    "managedClasses": ["6А", "6Б"],
+    "canEditGuests": false
+  }
+}
+```
+
+#### Get Pending Pins
+
+**GET** `/api/v1/admin/pins/pending?limit=50&offset=0`
+
+Returns pins awaiting verification that the admin can manage.
+
+#### Verify Pin
+
+**POST** `/api/v1/admin/pins/{pinId}/verify`
+
+**Request Body:**
+
+```json
+{
+  "approved": true | false
+}
+```
+
+#### Get Pending Donations
+
+**GET** `/api/v1/admin/donations/pending`
+
+#### Verify Donation
+
+**POST** `/api/v1/admin/donations/{donationId}/verify`
+
+**Request Body:**
+
+```json
+{
+  "status": "verified" | "rejected",
+  "amount": 100.00,
+  "notes": "Payment confirmed via bank transfer"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "message": "Donation verified successfully",
+    "eligibleForCertificate": true | false
+  }
+}
+```
+
+#### Reset User Password
+
+**POST** `/api/v1/admin/users/{userId}/reset-password`
+
+**Request Body:**
+
+```json
+{
+  "newPassword": "string (min 6 chars)"
+}
+```
+
+#### Get Students by Class
+
+**GET** `/api/v1/admin/users/class/{className}`
+
+#### Get Donations by Class
+
+**GET** `/api/v1/admin/donations/class/{className}?limit=50&offset=0`
+
+#### Get Test Results by Class
+
+**GET** `/api/v1/admin/tests/class/{className}?limit=50&offset=0`
+
+#### Get Guest Donations (requires canEditGuests permission)
+
+**GET** `/api/v1/admin/donations/guests?limit=50&offset=0`
+
+---
+
+### Superadmin Endpoints
+
+Requires `role: superadmin`.
+
+#### List All Users
+
+**GET** `/api/v1/superadmin/users?limit=50&offset=0`
+
+#### Assign Class Teacher
+
+**POST** `/api/v1/superadmin/class-teachers`
+
+**Request Body:**
+
+```json
+{
+  "teacherId": "uuid",
+  "className": "6А",
+  "canEditGuests": false
+}
+```
+
+#### Set Donation Directly
+
+**POST** `/api/v1/superadmin/donations/user/{userId}/set`
+
+Directly marks a user's donation as verified.
+
+**Request Body:**
+
+```json
+{
+  "amount": 100.0,
+  "notes": "Confirmed by admin"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "message": "Donation set successfully",
+    "eligibleForCertificate": true | false
+  }
+}
+```
+
+#### Get All Test Results
+
+**GET** `/api/v1/superadmin/tests?limit=50&offset=0`
+
+#### Get All Pins
+
+**GET** `/api/v1/superadmin/pins?limit=50&offset=0&regionId=&status=&sortBy=newest`
+
+---
+
+## Data Models
+
+### User
+
+```typescript
+interface User {
+  id: string; // UUID
+  name: string;
+  gender: "male" | "female";
+  userType: "student" | "teacher" | "guest";
+  role: "user" | "admin" | "superadmin";
+  studentClass?: string; // e.g., "6А", "10Б"
+  avatarNumber: number; // 1-10
+  createdAt: string; // ISO 8601
+}
+```
+
+### Pin
+
+```typescript
+interface Pin {
+  id: string;
+  userId: string;
+  regionId: string; // e.g., "Kyivska"
+  regionName: string; // e.g., "Київська область"
+  pinType: "visited" | "want_to_visit";
+  description: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+}
+
+interface PinWithUser {
+  id: string;
+  userId: string;
+  regionId: string;
+  regionName: string;
+  pinType: "visited" | "want_to_visit";
+  description: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+  userDisplayName: string; // e.g., "Михайло П."
+  userGender: "male" | "female";
+  avatarNumber: number;
+  images?: string[]; // Array of GCS URLs
+}
+
+interface PinImage {
+  id: string;
+  pinId: string;
+  imageUrl: string;
+  order: number;
+  createdAt: string;
+}
+```
+
+### Test Result
+
+```typescript
+interface TestResult {
+  id: string;
+  userId: string;
+  regionId: string;
+  regionName: string;
+  score: number; // Always 12 (only perfect scores accepted)
+  totalQuestions: number; // Always 12
+  completedAt: string;
+}
+```
+
+### Donation
+
+```typescript
+interface Donation {
+  id: string;
+  userId: string;
+  amount?: number;
+  transactionId?: string;
+  status: "pending" | "verified" | "rejected";
+  notes?: string;
+  verifiedAt?: string;
+  donatedAt?: string;
+}
+```
+
+### Certificate
+
+```typescript
+interface Certificate {
+  id: string;
+  userId: string;
+  userName: string;
+  issuedAt: string;
+}
+
+interface CertificateEligibility {
+  userId: string;
+  hasDonated: boolean;
+  hasPassedTest: boolean; // True if passed at least 1 region
+  passedCount: number;
+  totalRegions: number; // Always 25
+  isEligible: boolean; // true only if hasDonated && hasPassedTest
+  hasCertificate: boolean;
+}
+```
+
+---
+
+## Error Handling
+
+### Error Codes
+
+| Code               | HTTP Status | Description              |
+| ------------------ | ----------- | ------------------------ |
+| `VALIDATION_ERROR` | 400         | Invalid request data     |
+| `BAD_REQUEST`      | 400         | Malformed request        |
+| `UNAUTHORIZED`     | 401         | Missing or invalid token |
+| `FORBIDDEN`        | 403         | Insufficient permissions |
+| `NOT_FOUND`        | 404         | Resource not found       |
+| `CONFLICT`         | 409         | Resource already exists  |
+| `INTERNAL_ERROR`   | 500         | Server error             |
+
+### Error Response Example
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Password must be at least 6 characters"
+  }
+}
+```
+
+### Common Validation Errors
+
+| Endpoint     | Error                | Message                                        |
+| ------------ | -------------------- | ---------------------------------------------- |
+| Create Pin   | Too many images      | "Maximum 5 images allowed per pin"             |
+| Create Pin   | Description too long | "Description must be 500 characters or less"   |
+| Create Pin   | Missing description  | "Description is required"                      |
+| Submit Test  | Wrong score          | "Only perfect scores (12/12) can be submitted" |
+| Upload Image | File too large       | "file too large: max 10MB allowed"             |
+| Upload Image | Wrong format         | "invalid file type: only JPEG and PNG allowed" |
+
+---
+
+## Image Upload Guidelines
+
+### Supported Formats
+
+- JPEG/JPG
+- PNG
+
+### Size Limits
+
+- Maximum file size: **10MB** per image
+- Maximum images per pin: **5 images**
+- Images are automatically resized to max **1920x1080** pixels
+
+### Image Processing
+
+All uploaded images are processed server-side:
+
+1. Validated for file type (JPEG/PNG only)
+2. Resized if dimensions exceed 1920x1080 (maintains aspect ratio)
+3. Converted to JPEG format (quality 85) for optimal file size
+4. Uploaded to Google Cloud Storage
+5. Made publicly accessible
+
+### Image URLs
+
+Images are stored at:
+
+```
+https://storage.googleapis.com/school-16-donates-images/pins/{pinId}/{imageId}.jpg
+```
+
+### Frontend Validation
+
+Before uploading, validate on frontend:
+
+```javascript
+const validateImages = (files) => {
+  const errors = [];
+
+  if (files.length > 5) {
+    errors.push("Maximum 5 images allowed");
+  }
+
+  for (const file of files) {
+    if (file.size > 10 * 1024 * 1024) {
+      errors.push(`${file.name}: File too large (max 10MB)`);
+    }
+    if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+      errors.push(`${file.name}: Only JPEG and PNG allowed`);
+    }
+  }
+
+  return errors;
+};
+```
+
+---
+
+## Region-Class Mapping
+
+Each region is assigned to a responsible class. This is used for tracking donations per region.
+
+| Region ID                   | Ukrainian Name            | Responsible Class |
+| --------------------------- | ------------------------- | ----------------- |
+| `Vinnytska`                 | Вінницька область         | 1А                |
+| `Volynska`                  | Волинська область         | 1Б                |
+| `Dnipropetrovska`           | Дніпропетровська область  | 2А                |
+| `Donetska`                  | Донецька область          | 2Б                |
+| `Zhytomyrska`               | Житомирська область       | 3А                |
+| `Zakarpatska`               | Закарпатська область      | 3Б                |
+| `Zaporizka`                 | Запорізька область        | 4А                |
+| `Ivano-Frankivska`          | Івано-Франківська область | 4Б                |
+| `Kyivska`                   | Київська область          | 5А                |
+| `Kirovohradska`             | Кіровоградська область    | 5Б                |
+| `Luhanska`                  | Луганська область         | 6А                |
+| `Lvivska`                   | Львівська область         | 6Б                |
+| `Mykolaivska`               | Миколаївська область      | 7А                |
+| `Odeska`                    | Одеська область           | 7Б                |
+| `Poltavska`                 | Полтавська область        | 8А                |
+| `Rivnenska`                 | Рівненська область        | 8Б                |
+| `Sumska`                    | Сумська область           | 9А                |
+| `Ternopilska`               | Тернопільська область     | 9Б                |
+| `Kharkivska`                | Харківська область        | 10А               |
+| `Khersonska`                | Херсонська область        | 10Б               |
+| `Khmelnytska`               | Хмельницька область       | 11А               |
+| `Cherkaska`                 | Черкаська область         | 11Б               |
+| `Chernivetska`              | Чернівецька область       | 1В                |
+| `Chernihivska`              | Чернігівська область      | 2В                |
+| `Avtonomna Respublika Krym` | Автономна Республіка Крим | 3В                |
+
+---
+
+## Frontend Implementation Guide
+
+### 1. Update AuthModal.js
+
+Replace mock registration with actual API call:
+
+```javascript
+const handleRegister = async (e) => {
+  e.preventDefault();
+  setError("");
+  setLoading(true);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: registerForm.name,
+        password: registerForm.password,
+        gender: registerForm.gender,
+        userType: registerForm.userRole,
+        studentClass:
+          registerForm.userRole === "student"
+            ? registerForm.studentClass
+            : null,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      setError(data.error.message);
+      return;
+    }
+
+    // Store auth data
+    localStorage.setItem("token", data.data.token);
+    localStorage.setItem(
+      "currentUser",
+      JSON.stringify({
+        ...data.data,
+        avatarNumber: data.data.avatarNumber,
+      })
+    );
+    localStorage.setItem("isLoggedIn", "true");
+
+    setSuccess("Реєстрація успішна!");
+    setTimeout(() => onClose(), 1500);
+  } catch (err) {
+    setError("Помилка підключення до сервера");
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+### 2. Create API Service
+
+```javascript
+// src/services/api.js
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:8080/api/v1";
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    ...(token && { Authorization: `Bearer ${token}` }),
+  };
+};
+
+const getAuthHeadersMultipart = () => {
+  const token = localStorage.getItem("token");
+  return {
+    ...(token && { Authorization: `Bearer ${token}` }),
+    // No Content-Type for multipart - browser sets it
+  };
+};
+
+export const api = {
+  // Auth
+  register: (data) =>
+    fetch(`${API_BASE_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
+
+  login: (data) =>
+    fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
+
+  verifyToken: () =>
+    fetch(`${API_BASE_URL}/auth/verify`, {
+      headers: getAuthHeaders(),
+    }).then((r) => r.json()),
+
+  // Tests
+  submitTest: (data) =>
+    fetch(`${API_BASE_URL}/tests/submit`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
+
+  getTestProgress: () =>
+    fetch(`${API_BASE_URL}/tests/progress`, {
+      headers: getAuthHeaders(),
+    }).then((r) => r.json()),
+
+  getPassedRegions: () =>
+    fetch(`${API_BASE_URL}/tests/passed-regions`, {
+      headers: getAuthHeaders(),
+    }).then((r) => r.json()),
+
+  // Donations
+  submitDonation: (data = {}) =>
+    fetch(`${API_BASE_URL}/donations/submit`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
+
+  getDonationStatus: () =>
+    fetch(`${API_BASE_URL}/donations/status`, {
+      headers: getAuthHeaders(),
+    }).then((r) => r.json()),
+
+  // Pins
+  getRegionSummary: () =>
+    fetch(`${API_BASE_URL}/adventures/summary`).then((r) => r.json()),
+
+  getPinsByRegion: (regionId, limit = 50, offset = 0, sortBy = "newest") =>
+    fetch(
+      `${API_BASE_URL}/adventures/pins/${regionId}?limit=${limit}&offset=${offset}&sortBy=${sortBy}`
+    ).then((r) => r.json()),
+
+  createPin: (data) =>
+    fetch(`${API_BASE_URL}/adventures/pins`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    }).then((r) => r.json()),
+
+  createPinWithImages: async (data, imageFiles) => {
+    const formData = new FormData();
+    formData.append("regionId", data.regionId);
+    formData.append("regionName", data.regionName);
+    formData.append("pinType", data.pinType);
+    formData.append("description", data.description);
+
+    // Max 5 images
+    for (let i = 0; i < Math.min(imageFiles.length, 5); i++) {
+      formData.append("images", imageFiles[i]);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/adventures/pins`, {
+      method: "POST",
+      headers: getAuthHeadersMultipart(),
+      body: formData,
+    });
+    return response.json();
+  },
+
+  getMyPins: () =>
+    fetch(`${API_BASE_URL}/adventures/my-pins`, {
+      headers: getAuthHeaders(),
+    }).then((r) => r.json()),
+
+  deletePin: (pinId) =>
+    fetch(`${API_BASE_URL}/adventures/pins/${pinId}`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    }).then((r) => r.json()),
+
+  // Certificates
+  checkCertificateEligibility: () =>
+    fetch(`${API_BASE_URL}/certificates/eligibility`, {
+      headers: getAuthHeaders(),
+    }).then((r) => r.json()),
+
+  getCertificateInfo: () =>
+    fetch(`${API_BASE_URL}/certificates/my-certificate`, {
+      headers: getAuthHeaders(),
+    }).then((r) => r.json()),
+
+  downloadCertificate: async () => {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_BASE_URL}/certificates/generate`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to generate certificate");
+    }
+
+    return response.blob();
+  },
+};
+```
+
+### 3. Update RegionModal.js for Tests
+
+```javascript
+const handleTestSubmit = async () => {
+  if (correctAnswers !== 12) {
+    // Show failure message
+    return;
+  }
+
+  try {
+    const result = await api.submitTest({
+      regionId: currentRegion.id,
+      regionName: currentRegion.name,
+      score: 12,
+      totalQuestions: 12,
+    });
+
+    if (result.success) {
+      // Show confetti!
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+
+      if (result.data.eligibleForCertificate) {
+        // User can now download certificate!
+        setShowCertificateModal(true);
+      }
+    }
+  } catch (err) {
+    console.error("Failed to submit test:", err);
+  }
+};
+```
+
+### 4. Download Certificate Handler
+
+```javascript
+const handleDownloadCertificate = async () => {
+  try {
+    setLoading(true);
+    const blob = await api.downloadCertificate();
+
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "certificate.pdf";
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+### 5. Token Verification on App Load
+
+```javascript
+// In App.js
+useEffect(() => {
+  const verifyAuth = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const result = await api.verifyToken();
+      if (!result.success) {
+        // Token invalid, clear storage
+        localStorage.removeItem("token");
+        localStorage.removeItem("currentUser");
+        localStorage.setItem("isLoggedIn", "false");
+      }
+    } catch (err) {
+      console.error("Token verification failed:", err);
+    }
+  };
+
+  verifyAuth();
+}, []);
+```
+
+### 6. Image Upload Component
+
+```javascript
+const ImageUploader = ({ onImagesSelected, maxImages = 5 }) => {
+  const [previews, setPreviews] = useState([]);
+  const [errors, setErrors] = useState([]);
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    const validationErrors = [];
+
+    if (files.length > maxImages) {
+      validationErrors.push(`Максимум ${maxImages} зображень`);
+    }
+
+    const validFiles = [];
+    for (const file of files.slice(0, maxImages)) {
+      if (file.size > 10 * 1024 * 1024) {
+        validationErrors.push(`${file.name}: Файл занадто великий (макс 10МБ)`);
+        continue;
+      }
+      if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+        validationErrors.push(`${file.name}: Тільки JPEG та PNG`);
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    setErrors(validationErrors);
+
+    // Create previews
+    const newPreviews = validFiles.map((file) => URL.createObjectURL(file));
+    setPreviews(newPreviews);
+
+    onImagesSelected(validFiles);
+  };
+
+  return (
+    <div>
+      <input
+        type="file"
+        multiple
+        accept="image/jpeg,image/png"
+        onChange={handleFileChange}
+      />
+      {errors.length > 0 && (
+        <div className="errors">
+          {errors.map((err, i) => (
+            <p key={i}>{err}</p>
+          ))}
+        </div>
+      )}
+      <div className="previews">
+        {previews.map((src, i) => (
+          <img key={i} src={src} alt={`Preview ${i + 1}`} />
+        ))}
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+## Environment Variables
+
+### Frontend (.env)
+
+```env
+REACT_APP_API_URL=https://api.yourbackend.com/api/v1
+```
+
+### Backend
+
+```env
+PORT=8080
+DATABASE_URL=postgresql://user:pass@host:5432/dbname
+JWT_SECRET=your-secure-secret-key-min-32-chars
+BASE_URL=https://api.yourbackend.com
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
+```
+
+---
+
+## Region IDs Reference
+
+Use these exact region IDs when submitting tests or creating pins:
+
+```javascript
+const REGIONS = {
+  Vinnytska: "Вінницька область",
+  Volynska: "Волинська область",
+  Dnipropetrovska: "Дніпропетровська область",
+  Donetska: "Донецька область",
+  Zhytomyrska: "Житомирська область",
+  Zakarpatska: "Закарпатська область",
+  Zaporizka: "Запорізька область",
+  "Ivano-Frankivska": "Івано-Франківська область",
+  Kyivska: "Київська область",
+  Kirovohradska: "Кіровоградська область",
+  Luhanska: "Луганська область",
+  Lvivska: "Львівська область",
+  Mykolaivska: "Миколаївська область",
+  Odeska: "Одеська область",
+  Poltavska: "Полтавська область",
+  Rivnenska: "Рівненська область",
+  Sumska: "Сумська область",
+  Ternopilska: "Тернопільська область",
+  Kharkivska: "Харківська область",
+  Khersonska: "Херсонська область",
+  Khmelnytska: "Хмельницька область",
+  Cherkaska: "Черкаська область",
+  Chernivetska: "Чернівецька область",
+  Chernihivska: "Чернігівська область",
+  "Avtonomna Respublika Krym": "Автономна Республіка Крим",
+};
+
+const REGION_IDS = Object.keys(REGIONS);
+```
+
+---
+
+## Certificate Generation Logic
+
+A certificate can be generated when:
+
+1. User has passed **at least 1 region** with 12/12 score
+2. User's donation has been **verified** by an admin
+
+The `eligibleForCertificate` boolean is returned after:
+
+- Submitting a test (if user now qualifies - first test passed + donation verified)
+- Admin verifies a donation (if at least 1 test already passed)
+
+When `eligibleForCertificate: true`, show a button/modal to download the certificate using the `/certificates/generate` endpoint.
+
+**Important:** Certificates are generated **on-demand** - they are not stored as files. Each download request generates a fresh PDF with the user's name and a unique certificate ID.
