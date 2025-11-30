@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { api } from "../services/api";
 import "./AdminPanel.css";
 
-function AdminPanel({ onClose }) {
+function AdminPanel({ onClose, userRole }) {
   const [activeTab, setActiveTab] = useState("users");
   const [users, setUsers] = useState([]);
   const [pendingPins, setPendingPins] = useState([]);
@@ -14,19 +14,48 @@ function AdminPanel({ onClose }) {
   const [isSaving, setIsSaving] = useState(false);
   const [filterClass, setFilterClass] = useState("");
   const [availableClasses, setAvailableClasses] = useState([]);
+  const [permissions, setPermissions] = useState(null);
 
-  // Load data on mount
-  useEffect(() => {
-    loadData();
-  }, []);
+  const isSuperadmin = userRole === "superadmin";
 
-  const loadData = async () => {
+  // Load users based on role
+  const loadUsers = useCallback(async () => {
+    if (isSuperadmin) {
+      // Superadmin can see ALL users
+      const usersResult = await api.getAllUsers();
+      return usersResult.data?.users || usersResult.data?.items || [];
+    } else {
+      // Admin can only see students in their managed classes
+      const permResult = await api.getAdminPermissions();
+      const perms = permResult.data;
+      setPermissions(perms);
+
+      const managedClasses = perms?.managedClasses || [];
+      if (managedClasses.length === 0) {
+        return [];
+      }
+
+      // Load students from each managed class
+      const allUsers = [];
+      for (const className of managedClasses) {
+        try {
+          const classResult = await api.getStudentsByClass(className);
+          const classUsers = classResult.data?.users || classResult.data?.items || [];
+          allUsers.push(...classUsers);
+        } catch (e) {
+          console.error(`Error loading class ${className}:`, e);
+        }
+      }
+      return allUsers;
+    }
+  }, [isSuperadmin]);
+
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Load users
-      const usersResult = await api.getAllUsers();
-      const usersList = usersResult.data?.users || [];
+      // Load users based on role
+      const usersList = await loadUsers();
       setUsers(usersList);
 
       // Extract unique classes for filter
@@ -56,7 +85,12 @@ function AdminPanel({ onClose }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [loadUsers]);
+
+  // Load data on mount
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleEditUser = (user) => {
     setEditingUser(user);
@@ -72,10 +106,21 @@ function AdminPanel({ onClose }) {
     if (!editingUser) return;
     setIsSaving(true);
     try {
-      await api.updateUser(editingUser.userId, editForm);
+      if (isSuperadmin) {
+        // Superadmin can set donation directly
+        await api.setUserDonation(
+          editingUser.userId || editingUser.id,
+          editForm.donationAmount,
+          `Змінено адміном: ${editForm.hasDonated ? "підтверджено" : "не підтверджено"}`
+        );
+      } else {
+        // Admin can only verify donations through the pending donations flow
+        // For now, just show a message
+        alert("Для зміни донату використовуйте вкладку 'Донати'");
+      }
       // Reload users
-      const usersResult = await api.getAllUsers();
-      setUsers(usersResult.data?.users || []);
+      const usersList = await loadUsers();
+      setUsers(usersList);
       setEditingUser(null);
       setEditForm({});
     } catch (err) {
@@ -116,8 +161,8 @@ function AdminPanel({ onClose }) {
       await api.verifyDonation(donationId, status, amount, "");
       setPendingDonations(prev => prev.filter(d => d.donationId !== donationId));
       // Reload users to update donation status
-      const usersResult = await api.getAllUsers();
-      setUsers(usersResult.data?.users || []);
+      const usersList = await loadUsers();
+      setUsers(usersList);
     } catch (err) {
       alert(err.message || "Помилка верифікації");
     }
@@ -273,7 +318,14 @@ function AdminPanel({ onClose }) {
     <div className="admin-panel-overlay" onClick={onClose}>
       <div className="admin-panel-container" onClick={(e) => e.stopPropagation()}>
         <div className="admin-panel-header">
-          <h2 className="admin-panel-title">Панель адміністратора</h2>
+          <h2 className="admin-panel-title">
+            {isSuperadmin ? "Панель суперадміністратора" : "Панель адміністратора"}
+          </h2>
+          {!isSuperadmin && permissions?.managedClasses && (
+            <span className="admin-panel-subtitle">
+              Класи: {permissions.managedClasses.join(", ")}
+            </span>
+          )}
           <button className="admin-panel-close" onClick={onClose}>
             ✕
           </button>

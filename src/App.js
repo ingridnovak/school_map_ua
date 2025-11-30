@@ -274,7 +274,10 @@ function App() {
       )}
 
       {showAdminPanel && (
-        <AdminPanel onClose={() => setShowAdminPanel(false)} />
+        <AdminPanel
+          onClose={() => setShowAdminPanel(false)}
+          userRole={currentUser?.role}
+        />
       )}
     </div>
   );
