@@ -306,6 +306,30 @@ export const api = {
       headers: getAuthHeaders()
     });
     return handleResponse(response);
+  },
+
+  getAllUsers: async (limit = 100, offset = 0) => {
+    const response = await fetch(`${API_BASE_URL}/admin/users?limit=${limit}&offset=${offset}`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  updateUser: async (userId, userData) => {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(userData)
+    });
+    return handleResponse(response);
+  },
+
+  deleteUser: async (userId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
   }
 };
 
