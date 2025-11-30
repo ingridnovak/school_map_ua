@@ -338,6 +338,47 @@
   cursor: not-allowed;
 }
 
+.admin-btn.delete-permanent {
+  background: #dc2626;
+  color: white;
+  width: 100%;
+  padding: 10px 16px;
+  font-weight: 600;
+}
+
+.admin-btn.delete-permanent:hover {
+  background: #b91c1c;
+}
+
+/* Delete Section */
+.admin-delete-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px dashed #e5e7eb;
+}
+
+.admin-delete-warning {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+}
+
+.admin-delete-warning strong {
+  color: #dc2626;
+  font-size: 14px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.admin-delete-warning p {
+  color: #991b1b;
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.4;
+}
+
 /* Pin Cards */
 .admin-pins-list,
 .admin-donations-list {

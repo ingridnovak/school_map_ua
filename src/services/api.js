@@ -332,6 +332,15 @@ export const api = {
     return handleResponse(response);
   },
 
+  // Permanently delete user (admin - only managed classes)
+  deleteUserPermanent: async (userId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/permanent`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
   getStudentsByClass: async (className) => {
     const response = await fetch(`${API_BASE_URL}/admin/users/class/${encodeURIComponent(className)}`, {
       headers: getAuthHeaders()
@@ -415,6 +424,15 @@ export const api = {
     if (regionId) params.append('regionId', regionId);
     if (status) params.append('status', status);
     const response = await fetch(`${API_BASE_URL}/superadmin/pins?${params}`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  // Permanently delete any user (superadmin only)
+  deleteUserPermanentSuper: async (userId) => {
+    const response = await fetch(`${API_BASE_URL}/superadmin/users/${userId}`, {
+      method: 'DELETE',
       headers: getAuthHeaders()
     });
     return handleResponse(response);

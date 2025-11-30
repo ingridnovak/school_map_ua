@@ -206,6 +206,51 @@ function AdminPanel({ onClose, userRole }) {
     }
   };
 
+  const handleDeleteUserPermanent = async (user) => {
+    const userName = user.name;
+    const userId = user.userId || user.id;
+
+    // Double confirmation for destructive action
+    const confirmed = window.confirm(
+      `УВАГА! Ви збираєтесь НАЗАВЖДИ видалити користувача "${userName}".\n\n` +
+      `Це видалить ВСІ дані користувача:\n` +
+      `• Профіль\n` +
+      `• Донати\n` +
+      `• Результати тестів\n` +
+      `• Пригоди (піни)\n` +
+      `• Сертифікати\n\n` +
+      `Цю дію НЕМОЖЛИВО скасувати!\n\n` +
+      `Ви впевнені?`
+    );
+
+    if (!confirmed) return;
+
+    // Second confirmation
+    const doubleConfirmed = window.confirm(
+      `Останнє попередження!\n\n` +
+      `Введіть "ТАК" для підтвердження видалення "${userName}"`
+    );
+
+    if (!doubleConfirmed) return;
+
+    try {
+      // Use appropriate endpoint based on role
+      if (isSuperadmin) {
+        await api.deleteUserPermanentSuper(userId);
+      } else {
+        await api.deleteUserPermanent(userId);
+      }
+
+      toast.success(`Користувача "${userName}" успішно видалено`);
+
+      // Close modal and reload data
+      setEditingUser(null);
+      await loadData();
+    } catch (err) {
+      toast.error(err.message || "Помилка видалення користувача");
+    }
+  };
+
   const handleVerifyPin = async (pinId, approved) => {
     try {
       await api.verifyPin(pinId, approved);
@@ -697,6 +742,23 @@ function AdminPanel({ onClose, userRole }) {
                   {isSaving ? "Збереження..." : "Зберегти"}
                 </button>
               </div>
+
+              {/* Permanent delete section */}
+              {editingUser.role !== "superadmin" && (
+                <div className="admin-delete-section">
+                  <div className="admin-delete-warning">
+                    <strong>Небезпечна зона</strong>
+                    <p>Видалення користувача є незворотнім і призведе до втрати всіх його даних.</p>
+                  </div>
+                  <button
+                    className="admin-btn delete-permanent"
+                    onClick={() => handleDeleteUserPermanent(editingUser)}
+                    disabled={isSaving}
+                  >
+                    Видалити назавжди
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
