@@ -283,15 +283,6 @@ export const api = {
     return handleResponse(response);
   },
 
-  verifyDonation: async (donationId, status, amount, notes) => {
-    const response = await fetch(`${API_BASE_URL}/admin/donations/${donationId}/verify`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ status, amount, notes })
-    });
-    return handleResponse(response);
-  },
-
   resetUserPassword: async (userId, newPassword) => {
     const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/reset-password`, {
       method: 'POST',
@@ -329,10 +320,35 @@ export const api = {
     return handleResponse(response);
   },
 
+  // ==================== ADMIN DONATION ENDPOINTS ====================
+
+  getUserDonation: async (userId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/donations/user/${userId}`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  setUserDonation: async (userId, amount, notes = '') => {
+    const response = await fetch(`${API_BASE_URL}/admin/donations/user/${userId}/set`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ amount, notes })
+    });
+    return handleResponse(response);
+  },
+
   // ==================== SUPERADMIN ENDPOINTS ====================
 
   getAllUsers: async (limit = 100, offset = 0) => {
     const response = await fetch(`${API_BASE_URL}/superadmin/users?limit=${limit}&offset=${offset}`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getAllDonations: async (limit = 100, offset = 0) => {
+    const response = await fetch(`${API_BASE_URL}/superadmin/donations?limit=${limit}&offset=${offset}`, {
       headers: getAuthHeaders()
     });
     return handleResponse(response);
@@ -343,15 +359,6 @@ export const api = {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ teacherId, className, canEditGuests })
-    });
-    return handleResponse(response);
-  },
-
-  setUserDonation: async (userId, amount, notes = '') => {
-    const response = await fetch(`${API_BASE_URL}/superadmin/donations/user/${userId}/set`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ amount, notes })
     });
     return handleResponse(response);
   },
