@@ -8,6 +8,7 @@ import AboutSection from "./components/AboutSection";
 import AuthModal from "./components/AuthModal";
 import ConfirmModal from "./components/ConfirmModal";
 import AdminPanel from "./components/AdminPanel";
+import WelcomeGuide from "./components/WelcomeGuide";
 import { useToast } from "./components/Toast";
 import { api, clearAuthData } from "./services/api";
 
@@ -27,7 +28,16 @@ function App() {
   const [certificatePreviewUrl, setCertificatePreviewUrl] = useState(null);
   const [certificateBlob, setCertificateBlob] = useState(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [showWelcomeGuide, setShowWelcomeGuide] = useState(false);
   const toast = useToast();
+
+  // Check if welcome guide should be shown (first visit)
+  useEffect(() => {
+    const guideCompleted = localStorage.getItem("welcomeGuideCompleted");
+    if (!guideCompleted) {
+      setShowWelcomeGuide(true);
+    }
+  }, []);
 
   // Load user data from localStorage (immediate update)
   const loadUserFromStorage = () => {
@@ -261,16 +271,40 @@ function App() {
                 Адмін
               </button>
             )}
+            <button
+              className="guide-button"
+              onClick={() => setShowWelcomeGuide(true)}
+              title="Інструкція користувача"
+            >
+              <img
+                src="/icons/guide.png"
+                alt="Guide"
+                style={{ width: "20px", height: "20px" }}
+              />
+            </button>
           </>
         ) : (
-          <div className="user-info">
-            <img
-              src="/user-not.svg"
-              alt="Not logged in"
-              className="user-avatar"
-            />
-            <span className="user-name">User</span>
-          </div>
+          <>
+            <div className="user-info">
+              <img
+                src="/user-not.svg"
+                alt="Not logged in"
+                className="user-avatar"
+              />
+              <span className="user-name">User</span>
+            </div>
+            <button
+              className="guide-button"
+              onClick={() => setShowWelcomeGuide(true)}
+              title="Інструкція користувача"
+            >
+              <img
+                src="/icons/guide.png"
+                alt="Guide"
+                style={{ width: "20px", height: "20px" }}
+              />
+            </button>
+          </>
         )}
       </div>
 
@@ -302,7 +336,6 @@ function App() {
       <div className="hero-title">
         <p className="school-name">
           Мукачівська спеціалізована школа І-ІІІ ст. №16
-          <span className="school-name-detail">з поглибленим вивченням окремих предметів та курсів</span>
         </p>
         <div className="hero-title-content">
           <span className="hero-title-icon">🇺🇦</span>
@@ -366,8 +399,8 @@ function App() {
             </div>
             <h2 className="certificate-modal-title">Мій Сертифікат</h2>
             <p className="certificate-modal-message">
-              Вітаємо! Ви отримали сертифікат за проходження всіх тестів та
-              підтримку ЗСУ.
+              Вітаємо! Ви отримали сертифікат за проходження тестів та підтримку
+              ЗСУ.
             </p>
             <div className="certificate-preview">
               {isLoadingPreview ? (
@@ -422,6 +455,10 @@ function App() {
           onClose={() => setShowAdminPanel(false)}
           userRole={currentUser?.role}
         />
+      )}
+
+      {showWelcomeGuide && (
+        <WelcomeGuide onClose={() => setShowWelcomeGuide(false)} />
       )}
     </div>
   );

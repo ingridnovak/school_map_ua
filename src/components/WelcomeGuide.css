@@ -1,0 +1,374 @@
+/* Welcome Guide Modal */
+.welcome-guide-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.welcome-guide-modal {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 24px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.welcome-guide-skip {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.welcome-guide-skip:hover {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+/* Progress Dots */
+.welcome-guide-progress {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px 24px 0;
+}
+
+.welcome-guide-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.welcome-guide-dot:hover {
+  background: #cbd5e1;
+  transform: scale(1.2);
+}
+
+.welcome-guide-dot.active {
+  background: linear-gradient(135deg, #0057b8 0%, #1a73e8 100%);
+  transform: scale(1.3);
+  box-shadow: 0 2px 8px rgba(0, 87, 184, 0.4);
+}
+
+.welcome-guide-dot.completed {
+  background: #6f9c76;
+}
+
+/* Content */
+.welcome-guide-content {
+  padding: 32px 40px;
+  text-align: center;
+}
+
+.welcome-guide-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+  animation: bounce 2s ease infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.welcome-guide-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+  background: linear-gradient(135deg, #0057b8 0%, #1a73e8 50%, #0057b8 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.welcome-guide-step {
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 24px;
+}
+
+.welcome-guide-text {
+  text-align: left;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #475569;
+}
+
+.welcome-guide-text p {
+  margin: 0 0 16px 0;
+}
+
+.welcome-guide-text p:last-child {
+  margin-bottom: 0;
+}
+
+.welcome-guide-text ul {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+
+.welcome-guide-text li {
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.welcome-guide-text li::marker {
+  color: #0057b8;
+}
+
+.welcome-guide-text strong {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+/* Highlight Box */
+.welcome-guide-text .highlight-box {
+  background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+  border-left: 4px solid #0057b8;
+  padding: 16px 20px;
+  border-radius: 0 12px 12px 0;
+  margin: 20px 0;
+}
+
+.welcome-guide-text .highlight-box.warning {
+  background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+  border-left-color: #f59e0b;
+}
+
+/* Guide Image */
+.welcome-guide-image {
+  margin-top: 24px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  background: #f1f5f9;
+  border: 3px solid #e2e8f0;
+}
+
+.welcome-guide-image img {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: contain;
+  display: block;
+}
+
+/* Image Placeholder */
+.welcome-guide-image-placeholder {
+  margin-top: 24px;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  border-radius: 16px;
+  border: 2px dashed #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.welcome-guide-image-icon {
+  font-size: 40px;
+  opacity: 0.6;
+}
+
+/* Navigation */
+.welcome-guide-navigation {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 40px 32px;
+  gap: 16px;
+}
+
+.welcome-guide-btn {
+  flex: 1;
+  padding: 16px 24px;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.welcome-guide-btn.prev {
+  background: #f1f5f9;
+  border: none;
+  color: #64748b;
+}
+
+.welcome-guide-btn.prev:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.welcome-guide-btn.prev:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.welcome-guide-btn.next {
+  background: linear-gradient(135deg, #0057b8 0%, #1a73e8 100%);
+  border: none;
+  color: white;
+  box-shadow: 0 4px 16px rgba(0, 87, 184, 0.3);
+}
+
+.welcome-guide-btn.next:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 87, 184, 0.4);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .welcome-guide-overlay {
+    padding: 16px;
+    align-items: flex-end;
+  }
+
+  .welcome-guide-modal {
+    max-height: 85vh;
+    border-radius: 24px 24px 0 0;
+    margin-bottom: 0;
+  }
+
+  .welcome-guide-content {
+    padding: 24px 24px;
+  }
+
+  .welcome-guide-icon {
+    font-size: 48px;
+  }
+
+  .welcome-guide-title {
+    font-size: 22px;
+  }
+
+  .welcome-guide-text {
+    font-size: 15px;
+  }
+
+  .welcome-guide-image {
+    margin-top: 20px;
+  }
+
+  .welcome-guide-image img {
+    max-height: 220px;
+  }
+
+  .welcome-guide-navigation {
+    padding: 0 24px 24px;
+    flex-direction: column-reverse;
+  }
+
+  .welcome-guide-btn {
+    padding: 14px 20px;
+  }
+
+  .welcome-guide-image-placeholder {
+    padding: 30px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-guide-skip {
+    top: 12px;
+    right: 12px;
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+
+  .welcome-guide-progress {
+    padding: 20px 20px 0;
+    gap: 8px;
+  }
+
+  .welcome-guide-dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .welcome-guide-content {
+    padding: 20px 20px;
+  }
+
+  .welcome-guide-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+  }
+
+  .welcome-guide-title {
+    font-size: 20px;
+  }
+
+  .welcome-guide-step {
+    font-size: 11px;
+    margin-bottom: 16px;
+  }
+
+  .welcome-guide-text {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .welcome-guide-text .highlight-box {
+    padding: 12px 16px;
+  }
+
+  .welcome-guide-navigation {
+    padding: 0 20px 20px;
+  }
+
+  .welcome-guide-btn {
+    padding: 12px 16px;
+    font-size: 15px;
+  }
+}

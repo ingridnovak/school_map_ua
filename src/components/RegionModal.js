@@ -25,8 +25,10 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
   const [testsAlreadyPassed, setTestsAlreadyPassed] = useState(null); // null = loading, true/false = result
   const [shuffledTests, setShuffledTests] = useState([]);
   const [hasDonationVerified, setHasDonationVerified] = useState(false);
-  const [isDownloadingCertificate, setIsDownloadingCertificate] = useState(false);
+  const [isDownloadingCertificate, setIsDownloadingCertificate] =
+    useState(false);
   const [regionDonationTotal, setRegionDonationTotal] = useState(null);
+  const [regionStudentCount, setRegionStudentCount] = useState(null);
   const [isLoadingDonations, setIsLoadingDonations] = useState(true);
   const toast = useToast();
 
@@ -46,17 +48,21 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
     if (!assignedClass) {
       setIsLoadingDonations(false);
       setRegionDonationTotal(0);
+      setRegionStudentCount(0);
       return;
     }
 
     setIsLoadingDonations(true);
-    api.getClassDonationsTotal(assignedClass)
+    api
+      .getClassDonationsTotal(assignedClass)
       .then((result) => {
         setRegionDonationTotal(result.data?.totalAmount || 0);
+        setRegionStudentCount(result.data?.studentCount || 0);
       })
       .catch((error) => {
         console.error("Error fetching class donations:", error);
         setRegionDonationTotal(0);
+        setRegionStudentCount(0);
       })
       .finally(() => {
         setIsLoadingDonations(false);
@@ -66,7 +72,8 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
   // Check if tests were already passed (only for logged in users)
   useEffect(() => {
     if (isLoggedIn) {
-      api.getPassedRegions()
+      api
+        .getPassedRegions()
         .then((result) => {
           const passedRegions = result.data?.passedRegions || [];
           setTestsAlreadyPassed(passedRegions.includes(regionKey));
@@ -77,7 +84,8 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
         });
 
       // Also check donation status for certificate eligibility
-      api.getDonationStatus()
+      api
+        .getDonationStatus()
         .then((result) => {
           if (result.data?.hasDonated && result.data?.status === "verified") {
             setHasDonationVerified(true);
@@ -100,7 +108,8 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
       donationStatus === "idle"
     ) {
       setDonationStatus("checking");
-      api.getDonationStatus()
+      api
+        .getDonationStatus()
         .then((result) => {
           if (result.data?.hasDonated && result.data?.status === "verified") {
             setDonationStatus("verified");
@@ -189,7 +198,7 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
           regionId: regionKey,
           regionName: regionData.name,
           score: correct,
-          totalQuestions: regionData.tests.length
+          totalQuestions: regionData.tests.length,
         });
       } catch (error) {
         console.error("Error submitting test result:", error);
@@ -237,20 +246,38 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
         <div className="region-donation-content">
           <span className="region-donation-label">
             Зібрано на підтримку ЗСУ
-            {assignedClass && <span className="region-donation-class">({assignedClass} клас)</span>}
+            {assignedClass && (
+              <span className="region-donation-class">
+                ({assignedClass} клас)
+              </span>
+            )}
           </span>
           {isLoadingDonations ? (
-            <span className="region-donation-amount loading">Завантаження...</span>
-          ) : (
-            <span className="region-donation-amount">
-              {regionDonationTotal?.toLocaleString('uk-UA')} грн
+            <span className="region-donation-amount loading">
+              Завантаження...
             </span>
+          ) : (
+            <>
+              <span className="region-donation-amount">
+                {regionDonationTotal?.toLocaleString("uk-UA")} грн
+              </span>
+              {regionStudentCount > 0 && (
+                <span className="region-donation-average">
+                  (Середнє арифметичне :&emsp;
+                  {Math.round(regionDonationTotal / regionStudentCount)} грн)
+                </span>
+              )}
+            </>
           )}
         </div>
       </div>
 
       {testsAlreadyPassed && (
-        <div className={`tests-passed-banner ${hasDonationVerified ? 'with-certificate' : ''}`}>
+        <div
+          className={`tests-passed-banner ${
+            hasDonationVerified ? "with-certificate" : ""
+          }`}
+        >
           <div className="tests-passed-icon">
             <svg
               width="32"
@@ -271,7 +298,8 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
             {hasDonationVerified ? (
               <>
                 <p className="tests-passed-certificate-text">
-                  Вітаємо! Ти також зробив донат на підтримку ЗСУ. Забирай свій сертифікат!
+                  Вітаємо! Ти також зробив донат на підтримку ЗСУ. Забирай свій
+                  сертифікат!
                 </p>
                 <button
                   className="certificate-download-inline-btn"
@@ -290,24 +318,36 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
                       a.remove();
                       toast.success("Сертифікат успішно завантажено!");
                     } catch (error) {
-                      toast.error(error.message || "Помилка завантаження сертифікату");
+                      toast.error(
+                        error.message || "Помилка завантаження сертифікату"
+                      );
                     } finally {
                       setIsDownloadingCertificate(false);
                     }
                   }}
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
                     <path d="M12 18v-6" />
                     <path d="M9 15l3 3 3-3" />
                   </svg>
-                  {isDownloadingCertificate ? "Завантаження..." : "Завантажити сертифікат"}
+                  {isDownloadingCertificate
+                    ? "Завантаження..."
+                    : "Завантажити сертифікат"}
                 </button>
               </>
             ) : (
               <p className="tests-passed-suggestion">
-                Можливо, хочеш спробувати сили в іншому регіоні? Обирай будь-який!
+                Можливо, хочеш спробувати сили в іншому регіоні? Обирай
+                будь-який!
               </p>
             )}
           </div>
@@ -336,7 +376,7 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
           Задонатити на армію
         </button>
         <button className="region-modal-btn cancel" onClick={onClose}>
-          Відміна
+          Закрити вікно
         </button>
       </div>
     </div>
@@ -434,7 +474,9 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
                         a.remove();
                         toast.success("Сертифікат успішно завантажено!");
                       } catch (error) {
-                        toast.error(error.message || "Помилка завантаження сертифікату");
+                        toast.error(
+                          error.message || "Помилка завантаження сертифікату"
+                        );
                       }
                     }}
                   >
@@ -544,7 +586,7 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
               className="region-modal-btn cancel"
               onClick={handleBackToInfo}
             >
-              Відміна
+              Закрити вікно
             </button>
           </div>
         </>

@@ -423,14 +423,14 @@ function AdminPanel({ onClose, userRole }) {
                       : "Без донату"}
                   </span>
                   <span className={`admin-user-tests ${
-                    user.passedRegionsCount >= 26 ? "all-passed" :
+                    user.passedRegionsCount >= 25 ? "all-passed" :
                     user.passedRegionsCount > 0 ? "some-passed" : "none-passed"
                   }`}>
-                    {user.passedRegionsCount >= 26
+                    {user.passedRegionsCount >= 25
                       ? "✓ Всі тести"
                       : user.passedRegionsCount > 0
-                      ? `Тести: ${user.passedRegionsCount}/26`
-                      : "Тести: 0/26"}
+                      ? `Тести: ${user.passedRegionsCount}/25`
+                      : "Тести: 0/25"}
                   </span>
                 </div>
               </div>
