@@ -298,8 +298,8 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
             {hasDonationVerified ? (
               <>
                 <p className="tests-passed-certificate-text">
-                  Вітаємо! Ти також зробив донат на підтримку ЗСУ. Забирай свій
-                  сертифікат!
+                  Вітаємо! Ти також зробив благодійний внесок на підтримку ЗСУ.
+                  Забирай свій сертифікат!
                 </p>
                 <button
                   className="certificate-download-inline-btn"
@@ -366,14 +366,14 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
             className="region-modal-btn primary"
             onClick={handleTestClick}
           >
-            Тести: Перевір себе
+            Тести
           </button>
         )}
         <button
           className="region-modal-btn primary"
           onClick={handleDonateClick}
         >
-          Задонатити на армію
+          Благодійний внесок
         </button>
         <button className="region-modal-btn cancel" onClick={onClose}>
           Закрити вікно
@@ -426,7 +426,7 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
                 <div className="donation-checking">
                   <div className="donation-spinner"></div>
                   <p className="donation-checking-text">
-                    Перевіряємо статус вашого донату...
+                    Перевіряємо статус вашого благодійного внеску...
                   </p>
                 </div>
               )}
@@ -447,8 +447,8 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
                     </svg>
                   </div>
                   <p className="donation-success-text">
-                    Вітаємо! Ви пройшли тести на відмінно та задонатили на
-                    допомогу нашим військовим! Ось ваш сертифікат:
+                    Вітаємо! Ви пройшли тести на відмінно та зробили благодійний
+                    внесок на допомогу нашим військовим! Ось ваш сертифікат:
                   </p>
                   <img
                     src="/certificate.jpg"
@@ -503,7 +503,8 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
                   <h3 className="donation-pending-title">Майже готово!</h3>
                   <p className="donation-pending-text">
                     Ви успішно пройшли тестування! Наразі система перевіряє
-                    надходження вашого донату на підтримку Збройних Сил України.
+                    надходження вашого благодійного внеску на підтримку Збройних
+                    Сил України.
                   </p>
                   <p className="donation-pending-note">
                     Поверніться пізніше, щоб отримати свій сертифікат. Дякуємо
@@ -513,7 +514,7 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
                     className="region-modal-btn primary"
                     onClick={handleDonateClick}
                   >
-                    Задонатити зараз
+                    Зробити благодійний внесок зараз
                   </button>
                 </div>
               )}
@@ -603,7 +604,7 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
       <div className="qr-code-container">
         <img
           src={regionData.qrCodePath}
-          alt="QR Code для донату"
+          alt="QR Code для благодійного внеску"
           className="qr-code-image"
           onError={(e) => {
             e.target.style.display = "none";

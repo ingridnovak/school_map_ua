@@ -161,6 +161,32 @@
   letter-spacing: 0.3px;
 }
 
+.hero-subtitle-extra {
+  margin-top: 12px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(0, 87, 183, 0.1) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 87, 183, 0.2);
+  display: inline-block;
+}
+
+.hero-classes-info {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c5282;
+  letter-spacing: 0.5px;
+}
+
+.hero-victory-text {
+  margin: 6px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #c53030;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
   .hero-title {
@@ -187,6 +213,20 @@
 
   .hero-subtitle {
     font-size: 13px;
+  }
+
+  .hero-subtitle-extra {
+    margin-top: 10px;
+    padding: 10px 16px;
+  }
+
+  .hero-classes-info {
+    font-size: 12px;
+  }
+
+  .hero-victory-text {
+    font-size: 13px;
+    letter-spacing: 1px;
   }
 }
 

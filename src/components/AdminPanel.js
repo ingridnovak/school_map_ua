@@ -29,7 +29,7 @@ function AdminPanel({ onClose, userRole }) {
       const usersResult = await api.getAllUsers();
       return {
         users: usersResult.data?.users || usersResult.data?.items || [],
-        managedClasses: []
+        managedClasses: [],
       };
     } else {
       // Admin can only see students in their managed classes
@@ -47,7 +47,8 @@ function AdminPanel({ onClose, userRole }) {
       for (const className of managedClasses) {
         try {
           const classResult = await api.getStudentsByClass(className);
-          const classUsers = classResult.data?.users || classResult.data?.items || [];
+          const classUsers =
+            classResult.data?.users || classResult.data?.items || [];
           allUsers.push(...classUsers);
         } catch (e) {
           console.error(`Error loading class ${className}:`, e);
@@ -62,14 +63,16 @@ function AdminPanel({ onClose, userRole }) {
     setError(null);
     try {
       // Load users based on role
-      const { users: usersList, managedClasses: adminManagedClasses } = await loadUsers();
+      const { users: usersList, managedClasses: adminManagedClasses } =
+        await loadUsers();
       setUsers(usersList);
 
       // Extract unique classes for filter
-      const classes = [...new Set(usersList
-        .filter(u => u.studentClass)
-        .map(u => u.studentClass)
-      )].sort();
+      const classes = [
+        ...new Set(
+          usersList.filter((u) => u.studentClass).map((u) => u.studentClass)
+        ),
+      ].sort();
       setAvailableClasses(classes);
 
       // Load pins based on role
@@ -102,16 +105,23 @@ function AdminPanel({ onClose, userRole }) {
         if (isSuperadmin) {
           // Superadmin gets ALL donations
           const donationsResult = await api.getAllDonations();
-          allDonations = donationsResult.data?.donations || donationsResult.data?.items || [];
+          allDonations =
+            donationsResult.data?.donations ||
+            donationsResult.data?.items ||
+            [];
         } else {
           // Admin gets donations for their managed classes
           for (const className of adminManagedClasses) {
             try {
               const classResult = await api.getDonationsByClass(className);
-              const classDonations = classResult.data?.donations || classResult.data?.items || [];
+              const classDonations =
+                classResult.data?.donations || classResult.data?.items || [];
               allDonations.push(...classDonations);
             } catch (e) {
-              console.error(`Error loading donations for class ${className}:`, e);
+              console.error(
+                `Error loading donations for class ${className}:`,
+                e
+              );
             }
           }
         }
@@ -139,9 +149,16 @@ function AdminPanel({ onClose, userRole }) {
     const freshDonation = donationsByUserId[userId];
 
     // Use fresh donation data if available, otherwise fall back to user data
-    const donationAmount = freshDonation?.amount ?? user.donationAmount ?? user.donation?.amount ?? 0;
-    const donationStatus = freshDonation?.status ?? freshDonation?.donationStatus ??
-      user.donationStatus ?? (user.hasDonated ? "verified" : "pending");
+    const donationAmount =
+      freshDonation?.amount ??
+      user.donationAmount ??
+      user.donation?.amount ??
+      0;
+    const donationStatus =
+      freshDonation?.status ??
+      freshDonation?.donationStatus ??
+      user.donationStatus ??
+      (user.hasDonated ? "verified" : "pending");
 
     setEditForm({
       name: user.name || "",
@@ -155,8 +172,13 @@ function AdminPanel({ onClose, userRole }) {
     if (!editingUser) return;
 
     // Validate based on status
-    if (editForm.donationStatus === "verified" && editForm.donationAmount <= 0) {
-      toast.warning("Для підтвердження донату введіть суму більше 0");
+    if (
+      editForm.donationStatus === "verified" &&
+      editForm.donationAmount <= 0
+    ) {
+      toast.warning(
+        "Для підтвердження благодійного внеску введіть суму більше 0"
+      );
       return;
     }
 
@@ -168,7 +190,7 @@ function AdminPanel({ onClose, userRole }) {
       const statusText = {
         pending: "Очікує перевірки",
         verified: "Підтверджено",
-        rejected: "Відхилено"
+        rejected: "Відхилено",
       }[editForm.donationStatus];
 
       // Admin/Superadmin sets donation directly - auto-verified when amount > 0
@@ -178,11 +200,12 @@ function AdminPanel({ onClose, userRole }) {
         `Статус: ${statusText}. Встановлено адміністратором.`
       );
 
-      const statusMessage = editForm.donationStatus === "verified"
-        ? `Донат ${editForm.donationAmount} грн підтверджено`
-        : editForm.donationStatus === "rejected"
-        ? "Донат відхилено"
-        : "Статус донату оновлено";
+      const statusMessage =
+        editForm.donationStatus === "verified"
+          ? `Благодійний внесок ${editForm.donationAmount} грн підтверджено`
+          : editForm.donationStatus === "rejected"
+          ? "Благодійний внесок відхилено"
+          : "Статус благодійного внеску оновлено";
 
       toast.success(`${statusMessage} для ${editingUser.name}`);
 
@@ -223,14 +246,14 @@ function AdminPanel({ onClose, userRole }) {
     // Double confirmation for destructive action
     const confirmed = window.confirm(
       `УВАГА! Ви збираєтесь НАЗАВЖДИ видалити користувача "${userName}".\n\n` +
-      `Це видалить ВСІ дані користувача:\n` +
-      `• Профіль\n` +
-      `• Донати\n` +
-      `• Результати тестів\n` +
-      `• Пригоди (піни)\n` +
-      `• Сертифікати\n\n` +
-      `Цю дію НЕМОЖЛИВО скасувати!\n\n` +
-      `Ви впевнені?`
+        `Це видалить ВСІ дані користувача:\n` +
+        `• Профіль\n` +
+        `• Благодійні внески\n` +
+        `• Результати тестів\n` +
+        `• Пригоди (піни)\n` +
+        `• Сертифікати\n\n` +
+        `Цю дію НЕМОЖЛИВО скасувати!\n\n` +
+        `Ви впевнені?`
     );
 
     if (!confirmed) return;
@@ -238,7 +261,7 @@ function AdminPanel({ onClose, userRole }) {
     // Second confirmation
     const doubleConfirmed = window.confirm(
       `Останнє попередження!\n\n` +
-      `Введіть "ТАК" для підтвердження видалення "${userName}"`
+        `Введіть "ТАК" для підтвердження видалення "${userName}"`
     );
 
     if (!doubleConfirmed) return;
@@ -265,12 +288,14 @@ function AdminPanel({ onClose, userRole }) {
     try {
       await api.verifyPin(pinId, approved);
       // Update pin status in local state
-      setPins(prev => prev.map(p => {
-        if ((p.id || p.pinId) === pinId) {
-          return { ...p, status: approved ? 'approved' : 'rejected' };
-        }
-        return p;
-      }));
+      setPins((prev) =>
+        prev.map((p) => {
+          if ((p.id || p.pinId) === pinId) {
+            return { ...p, status: approved ? "approved" : "rejected" };
+          }
+          return p;
+        })
+      );
     } catch (err) {
       toast.error(err.message || "Помилка верифікації");
     }
@@ -279,9 +304,9 @@ function AdminPanel({ onClose, userRole }) {
   const handleEditPin = (pin) => {
     setEditingPin(pin);
     setPinEditForm({
-      description: pin.description || '',
-      pinType: pin.pinType || 'visited',
-      status: pin.status || 'pending'
+      description: pin.description || "",
+      pinType: pin.pinType || "visited",
+      status: pin.status || "pending",
     });
   };
 
@@ -294,32 +319,34 @@ function AdminPanel({ onClose, userRole }) {
       await api.updatePin(pinId, pinEditForm);
 
       // Update local state
-      setPins(prev => prev.map(p => {
-        if ((p.id || p.pinId) === pinId) {
-          return { ...p, ...pinEditForm };
-        }
-        return p;
-      }));
+      setPins((prev) =>
+        prev.map((p) => {
+          if ((p.id || p.pinId) === pinId) {
+            return { ...p, ...pinEditForm };
+          }
+          return p;
+        })
+      );
 
       setEditingPin(null);
       setPinEditForm({});
-      toast.success('Пін успішно оновлено');
+      toast.success("Пін успішно оновлено");
     } catch (err) {
-      toast.error(err.message || 'Помилка оновлення піна');
+      toast.error(err.message || "Помилка оновлення піна");
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeletePin = async (pinId) => {
-    if (!window.confirm('Ви впевнені, що хочете видалити цей пін?')) return;
+    if (!window.confirm("Ви впевнені, що хочете видалити цей пін?")) return;
 
     try {
       await api.deleteAdminPin(pinId);
-      setPins(prev => prev.filter(p => (p.id || p.pinId) !== pinId));
-      toast.success('Пін видалено');
+      setPins((prev) => prev.filter((p) => (p.id || p.pinId) !== pinId));
+      toast.success("Пін видалено");
     } catch (err) {
-      toast.error(err.message || 'Помилка видалення піна');
+      toast.error(err.message || "Помилка видалення піна");
     }
   };
 
@@ -350,30 +377,34 @@ function AdminPanel({ onClose, userRole }) {
 
     if (freshDonation) {
       // Use fresh donation data
-      const status = freshDonation.status || freshDonation.donationStatus || (freshDonation.hasDonated ? "verified" : "pending");
+      const status =
+        freshDonation.status ||
+        freshDonation.donationStatus ||
+        (freshDonation.hasDonated ? "verified" : "pending");
       const isVerified = status === "verified" || freshDonation.hasDonated;
       return {
         status,
         isVerified,
         isPending: status === "pending",
         isRejected: status === "rejected",
-        amount: freshDonation.amount || 0
+        amount: freshDonation.amount || 0,
       };
     }
 
     // Fallback to user data
-    const status = user.donationStatus || (user.hasDonated ? "verified" : "none");
+    const status =
+      user.donationStatus || (user.hasDonated ? "verified" : "none");
     return {
       status,
       isVerified: user.hasDonated || user.donationStatus === "verified",
       isPending: user.donationStatus === "pending",
       isRejected: user.donationStatus === "rejected",
-      amount: user.donationAmount || user.donation?.amount || 0
+      amount: user.donationAmount || user.donation?.amount || 0,
     };
   };
 
   const filteredUsers = filterClass
-    ? users.filter(u => u.studentClass === filterClass)
+    ? users.filter((u) => u.studentClass === filterClass)
     : users;
 
   const renderUsersTab = () => (
@@ -385,8 +416,10 @@ function AdminPanel({ onClose, userRole }) {
           className="admin-filter-select"
         >
           <option value="">Всі класи</option>
-          {availableClasses.map(cls => (
-            <option key={cls} value={cls}>{cls}</option>
+          {availableClasses.map((cls) => (
+            <option key={cls} value={cls}>
+              {cls}
+            </option>
           ))}
         </select>
         <span className="admin-user-count">
@@ -395,7 +428,7 @@ function AdminPanel({ onClose, userRole }) {
       </div>
 
       <div className="admin-users-list">
-        {filteredUsers.map(user => {
+        {filteredUsers.map((user) => {
           const donationInfo = getUserDonationInfo(user);
 
           return (
@@ -404,28 +437,45 @@ function AdminPanel({ onClose, userRole }) {
                 <div className="admin-user-name">{user.name}</div>
                 <div className="admin-user-details">
                   <span className="admin-user-type">
-                    {user.userType === "student" ? "Учень" : user.userType === "teacher" ? "Вчитель" : "Гість"}
+                    {user.userType === "student"
+                      ? "Учень"
+                      : user.userType === "teacher"
+                      ? "Вчитель"
+                      : "Гість"}
                   </span>
                   {user.studentClass && (
-                    <span className="admin-user-class">{user.studentClass}</span>
+                    <span className="admin-user-class">
+                      {user.studentClass}
+                    </span>
                   )}
-                  <span className={`admin-user-donation ${
-                    donationInfo.isVerified ? "donated" :
-                    donationInfo.isPending ? "pending" :
-                    donationInfo.isRejected ? "rejected" : ""
-                  }`}>
+                  <span
+                    className={`admin-user-donation ${
+                      donationInfo.isVerified
+                        ? "donated"
+                        : donationInfo.isPending
+                        ? "pending"
+                        : donationInfo.isRejected
+                        ? "rejected"
+                        : ""
+                    }`}
+                  >
                     {donationInfo.isVerified
-                      ? `Донат: ${donationInfo.amount} грн`
+                      ? `Благодійний внесок: ${donationInfo.amount} грн`
                       : donationInfo.isPending
-                      ? "Донат очікує"
+                      ? "Благодійний внесок очікує"
                       : donationInfo.isRejected
-                      ? "Донат відхилено"
-                      : "Без донату"}
+                      ? "Благодійний внесок відхилено"
+                      : "Без благодійного внеску"}
                   </span>
-                  <span className={`admin-user-tests ${
-                    user.passedRegionsCount >= 25 ? "all-passed" :
-                    user.passedRegionsCount > 0 ? "some-passed" : "none-passed"
-                  }`}>
+                  <span
+                    className={`admin-user-tests ${
+                      user.passedRegionsCount >= 25
+                        ? "all-passed"
+                        : user.passedRegionsCount > 0
+                        ? "some-passed"
+                        : "none-passed"
+                    }`}
+                  >
                     {user.passedRegionsCount >= 25
                       ? "✓ Всі тести"
                       : user.passedRegionsCount > 0
@@ -444,9 +494,9 @@ function AdminPanel({ onClose, userRole }) {
                 <button
                   className="admin-btn password"
                   onClick={() => handleResetPassword(user.userId, user.name)}
-              >
-                Змінити пароль
-              </button>
+                >
+                  Змінити пароль
+                </button>
               </div>
             </div>
           );
@@ -456,9 +506,9 @@ function AdminPanel({ onClose, userRole }) {
   );
 
   const renderPinsTab = () => {
-    const pendingCount = pins.filter(p => p.status === 'pending').length;
-    const approvedCount = pins.filter(p => p.status === 'approved').length;
-    const rejectedCount = pins.filter(p => p.status === 'rejected').length;
+    const pendingCount = pins.filter((p) => p.status === "pending").length;
+    const approvedCount = pins.filter((p) => p.status === "approved").length;
+    const rejectedCount = pins.filter((p) => p.status === "rejected").length;
 
     return (
       <div className="admin-tab-content">
@@ -466,31 +516,43 @@ function AdminPanel({ onClose, userRole }) {
           <span className="admin-stat">Всього: {pins.length}</span>
           <span className="admin-stat approved">Схвалено: {approvedCount}</span>
           <span className="admin-stat pending">Очікують: {pendingCount}</span>
-          <span className="admin-stat rejected">Відхилено: {rejectedCount}</span>
+          <span className="admin-stat rejected">
+            Відхилено: {rejectedCount}
+          </span>
         </div>
 
         {pins.length === 0 ? (
           <div className="admin-empty">Немає пінів</div>
         ) : (
           <div className="admin-pins-list">
-            {pins.map(pin => {
+            {pins.map((pin) => {
               const pinId = pin.id || pin.pinId;
-              const status = pin.status || 'pending';
-              const isApproved = status === 'approved';
-              const isPending = status === 'pending';
-              const isRejected = status === 'rejected';
+              const status = pin.status || "pending";
+              const isApproved = status === "approved";
+              const isPending = status === "pending";
+              const isRejected = status === "rejected";
 
               return (
                 <div key={pinId} className={`admin-pin-card ${status}`}>
                   <div className="admin-pin-header">
-                    <span className="admin-pin-user">{pin.userDisplayName}</span>
+                    <span className="admin-pin-user">
+                      {pin.userDisplayName}
+                    </span>
                     <span className={`admin-pin-status ${status}`}>
-                      {isApproved ? '✓ Схвалено' : isPending ? '⏳ Очікує' : isRejected ? '✗ Відхилено' : '—'}
+                      {isApproved
+                        ? "✓ Схвалено"
+                        : isPending
+                        ? "⏳ Очікує"
+                        : isRejected
+                        ? "✗ Відхилено"
+                        : "—"}
                     </span>
                     <span className="admin-pin-region">{pin.regionName}</span>
                   </div>
                   <div className="admin-pin-type">
-                    {pin.pinType === 'visited' ? '🔴 Був тут' : '🟢 Хочу відвідати'}
+                    {pin.pinType === "visited"
+                      ? "🔴 Був тут"
+                      : "🟢 Хочу відвідати"}
                   </div>
                   <div className="admin-pin-description">{pin.description}</div>
                   {pin.images && pin.images.length > 0 && (
@@ -540,39 +602,68 @@ function AdminPanel({ onClose, userRole }) {
   };
 
   const renderDonationsTab = () => {
-    const pendingCount = donations.filter(d => d.status === "pending" || d.donationStatus === "pending").length;
-    const verifiedCount = donations.filter(d => d.status === "verified" || d.donationStatus === "verified" || d.hasDonated).length;
+    const pendingCount = donations.filter(
+      (d) => d.status === "pending" || d.donationStatus === "pending"
+    ).length;
+    const verifiedCount = donations.filter(
+      (d) =>
+        d.status === "verified" ||
+        d.donationStatus === "verified" ||
+        d.hasDonated
+    ).length;
 
     return (
       <div className="admin-tab-content">
         <div className="admin-donation-stats">
           <span className="admin-stat">Всього: {donations.length}</span>
-          <span className="admin-stat verified">Підтверджено: {verifiedCount}</span>
+          <span className="admin-stat verified">
+            Підтверджено: {verifiedCount}
+          </span>
           <span className="admin-stat pending">Очікують: {pendingCount}</span>
         </div>
 
         {donations.length === 0 ? (
-          <div className="admin-empty">Немає донатів</div>
+          <div className="admin-empty">Немає благодійних внесків</div>
         ) : (
           <div className="admin-donations-list">
-            {donations.map(donation => {
-              const status = donation.status || donation.donationStatus || (donation.hasDonated ? "verified" : "pending");
+            {donations.map((donation) => {
+              const status =
+                donation.status ||
+                donation.donationStatus ||
+                (donation.hasDonated ? "verified" : "pending");
               const isVerified = status === "verified" || donation.hasDonated;
               const isPending = status === "pending";
               const isRejected = status === "rejected";
 
               return (
-                <div key={donation.donationId || donation.userId || donation.id} className={`admin-donation-card ${status}`}>
+                <div
+                  key={donation.donationId || donation.userId || donation.id}
+                  className={`admin-donation-card ${status}`}
+                >
                   <div className="admin-donation-info">
-                    <span className="admin-donation-user">{donation.userName || donation.userDisplayName || donation.name}</span>
+                    <span className="admin-donation-user">
+                      {donation.userName ||
+                        donation.userDisplayName ||
+                        donation.name}
+                    </span>
                     <span className={`admin-donation-status ${status}`}>
-                      {isVerified ? "✓ Підтверджено" : isPending ? "⏳ Очікує" : isRejected ? "✗ Відхилено" : "—"}
+                      {isVerified
+                        ? "✓ Підтверджено"
+                        : isPending
+                        ? "⏳ Очікує"
+                        : isRejected
+                        ? "✗ Відхилено"
+                        : "—"}
                     </span>
                     <span className="admin-donation-amount">
-                      {donation.amount ? `${donation.amount} грн` : "Сума не вказана"}
+                      {donation.amount
+                        ? `${donation.amount} грн`
+                        : "Сума не вказана"}
                     </span>
                     {donation.studentClass && (
-                      <span className="admin-donation-class">{donation.studentClass}</span>
+                      <span className="admin-donation-class">
+                        {donation.studentClass}
+                      </span>
                     )}
                   </div>
                   <div className="admin-donation-actions">
@@ -580,16 +671,26 @@ function AdminPanel({ onClose, userRole }) {
                       type="number"
                       placeholder="Сума"
                       className="admin-donation-input"
-                      id={`donation-amount-${donation.donationId || donation.userId || donation.id}`}
+                      id={`donation-amount-${
+                        donation.donationId || donation.userId || donation.id
+                      }`}
                       defaultValue={donation.amount || ""}
                     />
                     <button
                       className="admin-btn approve"
                       onClick={() => {
-                        const input = document.getElementById(`donation-amount-${donation.donationId || donation.userId || donation.id}`);
+                        const input = document.getElementById(
+                          `donation-amount-${
+                            donation.donationId ||
+                            donation.userId ||
+                            donation.id
+                          }`
+                        );
                         const amount = parseFloat(input.value) || 0;
                         if (amount <= 0) {
-                          toast.warning("Введіть суму донату більше 0");
+                          toast.warning(
+                            "Введіть суму благодійного внеску більше 0"
+                          );
                           return;
                         }
                         handleVerifyDonation(donation.userId, amount);
@@ -619,10 +720,15 @@ function AdminPanel({ onClose, userRole }) {
 
   return (
     <div className="admin-panel-overlay" onClick={onClose}>
-      <div className="admin-panel-container" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="admin-panel-container"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="admin-panel-header">
           <h2 className="admin-panel-title">
-            {isSuperadmin ? "Панель суперадміністратора" : "Панель адміністратора"}
+            {isSuperadmin
+              ? "Панель суперадміністратора"
+              : "Панель адміністратора"}
           </h2>
           {!isSuperadmin && permissions?.managedClasses && (
             <span className="admin-panel-subtitle">
@@ -655,7 +761,7 @@ function AdminPanel({ onClose, userRole }) {
             className={`admin-tab ${activeTab === "donations" ? "active" : ""}`}
             onClick={() => setActiveTab("donations")}
           >
-            Донати
+            Благодійні внески
             {donations.length > 0 && (
               <span className="admin-tab-count">{donations.length}</span>
             )}
@@ -686,45 +792,81 @@ function AdminPanel({ onClose, userRole }) {
 
         {/* Edit User Modal */}
         {editingUser && (
-          <div className="admin-edit-overlay" onClick={() => setEditingUser(null)}>
-            <div className="admin-edit-modal" onClick={(e) => e.stopPropagation()}>
-              <h3 className="admin-edit-title">Редагування: {editingUser.name}</h3>
+          <div
+            className="admin-edit-overlay"
+            onClick={() => setEditingUser(null)}
+          >
+            <div
+              className="admin-edit-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="admin-edit-title">
+                Редагування: {editingUser.name}
+              </h3>
 
               <div className="admin-edit-info">
-                <p><strong>Тип:</strong> {editingUser.userType === "student" ? "Учень" : editingUser.userType === "teacher" ? "Вчитель" : "Гість"}</p>
-                {editingUser.studentClass && <p><strong>Клас:</strong> {editingUser.studentClass}</p>}
-                <p><strong>Поточний статус донату:</strong> {
-                  (editingUser.hasDonated || editingUser.donationStatus === "verified")
+                <p>
+                  <strong>Тип:</strong>{" "}
+                  {editingUser.userType === "student"
+                    ? "Учень"
+                    : editingUser.userType === "teacher"
+                    ? "Вчитель"
+                    : "Гість"}
+                </p>
+                {editingUser.studentClass && (
+                  <p>
+                    <strong>Клас:</strong> {editingUser.studentClass}
+                  </p>
+                )}
+                <p>
+                  <strong>Поточний статус благодійного внеску:</strong>{" "}
+                  {editingUser.hasDonated ||
+                  editingUser.donationStatus === "verified"
                     ? "Підтверджено"
                     : editingUser.donationStatus === "pending"
                     ? "Очікує перевірки"
                     : editingUser.donationStatus === "rejected"
                     ? "Відхилено"
-                    : "Не підтверджено"
-                }</p>
-                {(editingUser.donationAmount || editingUser.donation?.amount) > 0 && (
-                  <p><strong>Сума:</strong> {editingUser.donationAmount || editingUser.donation?.amount} грн</p>
+                    : "Не підтверджено"}
+                </p>
+                {(editingUser.donationAmount || editingUser.donation?.amount) >
+                  0 && (
+                  <p>
+                    <strong>Сума:</strong>{" "}
+                    {editingUser.donationAmount || editingUser.donation?.amount}{" "}
+                    грн
+                  </p>
                 )}
               </div>
 
               <div className="admin-edit-form">
                 <div className="admin-edit-field">
-                  <label>Сума донату (грн):</label>
+                  <label>Сума благодійного внеску (грн):</label>
                   <input
                     type="number"
                     min="0"
                     step="1"
                     value={editForm.donationAmount}
-                    onChange={(e) => setEditForm({ ...editForm, donationAmount: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        donationAmount: parseFloat(e.target.value) || 0,
+                      })
+                    }
                     placeholder="Введіть суму"
                   />
                 </div>
 
                 <div className="admin-edit-field">
-                  <label>Статус донату:</label>
+                  <label>Статус благодійного внеску:</label>
                   <select
                     value={editForm.donationStatus}
-                    onChange={(e) => setEditForm({ ...editForm, donationStatus: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        donationStatus: e.target.value,
+                      })
+                    }
                   >
                     <option value="pending">Очікує перевірки</option>
                     <option value="verified">Підтверджено</option>
@@ -758,7 +900,10 @@ function AdminPanel({ onClose, userRole }) {
                 <div className="admin-delete-section">
                   <div className="admin-delete-warning">
                     <strong>Небезпечна зона</strong>
-                    <p>Видалення користувача є незворотнім і призведе до втрати всіх його даних.</p>
+                    <p>
+                      Видалення користувача є незворотнім і призведе до втрати
+                      всіх його даних.
+                    </p>
                   </div>
                   <button
                     className="admin-btn delete-permanent"
@@ -775,13 +920,23 @@ function AdminPanel({ onClose, userRole }) {
 
         {/* Edit Pin Modal */}
         {editingPin && (
-          <div className="admin-edit-overlay" onClick={() => setEditingPin(null)}>
-            <div className="admin-edit-modal" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="admin-edit-overlay"
+            onClick={() => setEditingPin(null)}
+          >
+            <div
+              className="admin-edit-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
               <h3 className="admin-edit-title">Редагування піна</h3>
 
               <div className="admin-edit-info">
-                <p><strong>Користувач:</strong> {editingPin.userDisplayName}</p>
-                <p><strong>Регіон:</strong> {editingPin.regionName}</p>
+                <p>
+                  <strong>Користувач:</strong> {editingPin.userDisplayName}
+                </p>
+                <p>
+                  <strong>Регіон:</strong> {editingPin.regionName}
+                </p>
               </div>
 
               <div className="admin-edit-form">
@@ -789,7 +944,12 @@ function AdminPanel({ onClose, userRole }) {
                   <label>Опис:</label>
                   <textarea
                     value={pinEditForm.description}
-                    onChange={(e) => setPinEditForm({ ...pinEditForm, description: e.target.value })}
+                    onChange={(e) =>
+                      setPinEditForm({
+                        ...pinEditForm,
+                        description: e.target.value,
+                      })
+                    }
                     rows={4}
                     placeholder="Опис піна"
                   />
@@ -799,7 +959,12 @@ function AdminPanel({ onClose, userRole }) {
                   <label>Тип піна:</label>
                   <select
                     value={pinEditForm.pinType}
-                    onChange={(e) => setPinEditForm({ ...pinEditForm, pinType: e.target.value })}
+                    onChange={(e) =>
+                      setPinEditForm({
+                        ...pinEditForm,
+                        pinType: e.target.value,
+                      })
+                    }
                   >
                     <option value="visited">Був тут</option>
                     <option value="want_to_visit">Хочу відвідати</option>
@@ -810,7 +975,9 @@ function AdminPanel({ onClose, userRole }) {
                   <label>Статус:</label>
                   <select
                     value={pinEditForm.status}
-                    onChange={(e) => setPinEditForm({ ...pinEditForm, status: e.target.value })}
+                    onChange={(e) =>
+                      setPinEditForm({ ...pinEditForm, status: e.target.value })
+                    }
                   >
                     <option value="pending">Очікує перевірки</option>
                     <option value="approved">Схвалено</option>
