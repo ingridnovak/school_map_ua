@@ -79,14 +79,14 @@ function AdminPanel({ onClose, userRole }) {
       try {
         let allPins = [];
         if (isSuperadmin) {
-          // Superadmin gets ALL pins
-          const pinsResult = await api.getAllPins();
+          // Superadmin gets ALL pins (no limit)
+          const pinsResult = await api.getAllPins(10000);
           allPins = pinsResult.data?.items || [];
         } else {
-          // Admin gets pins for their managed classes
+          // Admin gets pins for their managed classes (no limit)
           for (const className of adminManagedClasses) {
             try {
-              const classResult = await api.getPinsByClass(className);
+              const classResult = await api.getPinsByClass(className, 10000);
               const classPins = classResult.data?.items || [];
               allPins.push(...classPins);
             } catch (e) {
