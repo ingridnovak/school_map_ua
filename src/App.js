@@ -315,13 +315,13 @@ function App() {
           }`}
           onClick={() => setActiveTab("discovering")}
         >
-          Досліджуючи Україну
+          Досліджуємо Україну
         </button>
         <button
           className={`tab-button ${activeTab === "adventures" ? "active" : ""}`}
           onClick={() => setActiveTab("adventures")}
         >
-          Ваші Пригоди
+          Подорожуємо Україною
         </button>
         {!currentUser && (
           <button
@@ -345,6 +345,10 @@ function App() {
         <p className="hero-subtitle">
           Кожен внесок — крок до нашої спільної мети
         </p>
+        <div className="hero-subtitle-extra">
+          <p className="hero-classes-info">25 класів = 24 області + АР Крим</p>
+          <p className="hero-victory-text">Разом для ПЕРЕМОГИ</p>
+        </div>
       </div>
 
       {activeTab === "discovering" ? (
