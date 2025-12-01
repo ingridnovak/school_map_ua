@@ -300,12 +300,18 @@ function App() {
       </div>
 
       <div className="hero-title">
+        <p className="school-name">
+          Мукачівська спеціалізована школа І-ІІІ ст. №16
+          <span className="school-name-detail">з поглибленим вивченням окремих предметів та курсів</span>
+        </p>
         <div className="hero-title-content">
           <span className="hero-title-icon">🇺🇦</span>
           <h1>Плекаємо Україну — наближаємо перемогу</h1>
           <span className="hero-title-icon">💙💛</span>
         </div>
-        <p className="hero-subtitle">Кожен внесок — крок до нашої спільної мети</p>
+        <p className="hero-subtitle">
+          Кожен внесок — крок до нашої спільної мети
+        </p>
       </div>
 
       {activeTab === "discovering" ? (
@@ -360,7 +366,8 @@ function App() {
             </div>
             <h2 className="certificate-modal-title">Мій Сертифікат</h2>
             <p className="certificate-modal-message">
-              Вітаємо! Ви отримали сертифікат за проходження всіх тестів та підтримку ЗСУ.
+              Вітаємо! Ви отримали сертифікат за проходження всіх тестів та
+              підтримку ЗСУ.
             </p>
             <div className="certificate-preview">
               {isLoadingPreview ? (

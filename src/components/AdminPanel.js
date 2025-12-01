@@ -133,11 +133,21 @@ function AdminPanel({ onClose, userRole }) {
 
   const handleEditUser = (user) => {
     setEditingUser(user);
+
+    // Get fresh donation data from donations state
+    const userId = user.userId || user.id;
+    const freshDonation = donationsByUserId[userId];
+
+    // Use fresh donation data if available, otherwise fall back to user data
+    const donationAmount = freshDonation?.amount ?? user.donationAmount ?? user.donation?.amount ?? 0;
+    const donationStatus = freshDonation?.status ?? freshDonation?.donationStatus ??
+      user.donationStatus ?? (user.hasDonated ? "verified" : "pending");
+
     setEditForm({
       name: user.name || "",
-      donationAmount: user.donationAmount || 0,
+      donationAmount: donationAmount,
       hasDonated: user.hasDonated || false,
-      donationStatus: user.donationStatus || "pending",
+      donationStatus: donationStatus,
     });
   };
 
