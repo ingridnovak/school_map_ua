@@ -299,6 +299,15 @@ function App() {
         )}
       </div>
 
+      <div className="hero-title">
+        <div className="hero-title-content">
+          <span className="hero-title-icon">🇺🇦</span>
+          <h1>Плекаємо Україну — наближаємо перемогу</h1>
+          <span className="hero-title-icon">💙💛</span>
+        </div>
+        <p className="hero-subtitle">Кожен внесок — крок до нашої спільної мети</p>
+      </div>
+
       {activeTab === "discovering" ? (
         <DiscoveringUkraine />
       ) : (
