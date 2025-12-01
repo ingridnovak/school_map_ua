@@ -168,6 +168,14 @@
   animation: pulse 1.5s ease-in-out infinite;
 }
 
+.region-donation-average {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #92400e;
+  margin-top: 4px;
+}
+
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
@@ -211,6 +219,11 @@
 
   .region-donation-amount.loading {
     font-size: 14px;
+  }
+
+  .region-donation-average {
+    font-size: 12px;
+    margin-top: 2px;
   }
 }
 
