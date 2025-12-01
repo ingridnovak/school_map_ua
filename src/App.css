@@ -98,6 +98,23 @@
   background: transparent;
 }
 
+.school-name {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0057b8;
+  letter-spacing: 0.3px;
+  line-height: 1.4;
+}
+
+.school-name-detail {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #5a6c7d;
+  margin-top: 4px;
+}
+
 .hero-title-content {
   display: flex;
   align-items: center;
@@ -151,6 +168,15 @@
     margin-top: 70px;
   }
 
+  .school-name {
+    font-size: 15px;
+    margin-bottom: 10px;
+  }
+
+  .school-name-detail {
+    font-size: 12px;
+  }
+
   .hero-title h1 {
     font-size: 22px;
   }
@@ -167,6 +193,15 @@
 @media (max-width: 480px) {
   .hero-title {
     margin-top: 60px;
+  }
+
+  .school-name {
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  .school-name-detail {
+    font-size: 11px;
   }
 
   .hero-title h1 {
