@@ -448,13 +448,26 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
                   </div>
                   <p className="donation-success-text">
                     Вітаємо! Ви пройшли тести на відмінно та зробили благодійний
-                    внесок на допомогу нашим військовим! Ось ваш сертифікат:
+                    внесок на допомогу нашим військовим! Ваш сертифікат готовий:
                   </p>
-                  <img
-                    src="/certificate.jpg"
-                    alt="Сертифікат"
-                    className="certificate-image"
-                  />
+                  <div className="certificate-preview">
+                    <svg
+                      width="120"
+                      height="120"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#d4af37"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <circle cx="12" cy="15" r="3" />
+                      <path d="M9.5 17.5L8 22l4-2 4 2-1.5-4.5" />
+                    </svg>
+                    <span className="certificate-ready-text">Сертифікат готовий до завантаження!</span>
+                  </div>
                   <div className="certificate-note">
                     Ви можете зберегти цей сертифікат як підтвердження вашої
                     підтримки натиснувши кнопку знизу!
