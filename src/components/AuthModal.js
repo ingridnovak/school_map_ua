@@ -3,7 +3,7 @@ import "./AuthModal.css";
 import classesData from "../data/classesData.json";
 import { api, saveAuthData } from "../services/api";
 
-function AuthModal({ onClose }) {
+function AuthModal({ onClose, onAuthSuccess }) {
   const [activeTab, setActiveTab] = useState("register"); // 'register' or 'login'
   const [registerForm, setRegisterForm] = useState({
     name: "",
@@ -84,6 +84,11 @@ function AuthModal({ onClose }) {
       // Save auth data to localStorage
       saveAuthData(result.data);
 
+      // Notify parent about successful auth immediately
+      if (onAuthSuccess) {
+        onAuthSuccess();
+      }
+
       setSuccess("Реєстрація успішна! Ласкаво просимо.");
       setRegisterForm({
         name: "",
@@ -127,6 +132,11 @@ function AuthModal({ onClose }) {
 
       // Save auth data to localStorage
       saveAuthData(result.data);
+
+      // Notify parent about successful auth immediately
+      if (onAuthSuccess) {
+        onAuthSuccess();
+      }
 
       setSuccess("Вхід успішний! Ласкаво просимо.");
       setLoginForm({ name: "", password: "" });

@@ -184,7 +184,7 @@ function DiscoveringUkraine() {
       />
 
       <div className="scroll-hint">
-        👆 Swipe to explore the map
+        👆 Проведіть пальцем для перегляду карти
       </div>
 
       {selectedRegion && (

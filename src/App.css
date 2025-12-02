@@ -191,6 +191,7 @@
 @media (max-width: 768px) {
   .hero-title {
     padding: 16px 16px 12px;
+    padding-right: 80px; /* Space for user-section */
     margin-top: 70px;
   }
 
@@ -373,6 +374,10 @@
     padding: 6px 12px;
   }
 
+  .hero-title {
+    padding-right: 90px; /* Space for user-section on tablet/mobile */
+  }
+
   .user-avatar {
     width: 28px;
     height: 28px;
@@ -408,6 +413,10 @@
 
   .tab-button.active {
     transform: scale(1.02);
+  }
+
+  .tab-button.auth-button {
+    display: none; /* Hidden on mobile - using floating button instead */
   }
 
   .interactive-svg {
@@ -504,6 +513,54 @@
     font-size: 13px;
     padding: 10px 20px;
     bottom: 110px;
+  }
+}
+
+/* Mobile floating auth button - hidden on desktop */
+.mobile-auth-floating-btn {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .mobile-auth-floating-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #6f9c76 0%, #5a8060 100%);
+    color: white;
+    padding: 14px 24px;
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    z-index: 2400;
+    box-shadow: 0 6px 20px rgba(111, 156, 118, 0.4);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+
+  .mobile-auth-floating-btn:hover,
+  .mobile-auth-floating-btn:active {
+    background: linear-gradient(135deg, #5a8060 0%, #4a6b50 100%);
+    transform: translateX(-50%) scale(1.02);
+    box-shadow: 0 8px 24px rgba(111, 156, 118, 0.5);
+  }
+
+  .mobile-auth-floating-btn svg {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .mobile-auth-floating-btn {
+    bottom: 90px;
+    padding: 12px 20px;
+    font-size: 14px;
   }
 }
 
