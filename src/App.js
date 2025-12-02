@@ -347,7 +347,7 @@ function App() {
         </p>
         <div className="hero-subtitle-extra">
           <p className="hero-classes-info">25 класів = 24 області + АР Крим</p>
-          <p className="hero-victory-text">Разом для ПЕРЕМОГИ</p>
+          <p className="hero-victory-text">Разом - для ПЕРЕМОГИ</p>
         </div>
       </div>
 
