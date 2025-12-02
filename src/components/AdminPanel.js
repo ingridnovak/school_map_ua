@@ -493,7 +493,7 @@ function AdminPanel({ onClose, userRole }) {
                 </button>
                 <button
                   className="admin-btn password"
-                  onClick={() => handleResetPassword(user.userId, user.name)}
+                  onClick={() => handleResetPassword(user.userId || user.id, user.name)}
                 >
                   Змінити пароль
                 </button>
