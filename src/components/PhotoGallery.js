@@ -3,6 +3,14 @@ import "./PhotoGallery.css";
 
 const photos = [
   {
+    src: "/carousel/school1.png",
+    alt: "School Building with Ukrainian Flag",
+  },
+  {
+    src: "/carousel/school2.png",
+    alt: "School Playground",
+  },
+  {
     src: "/carousel/cote-arms-ukrainian-flag.jpg",
     alt: "Coat of Arms and Ukrainian Flag",
   },
