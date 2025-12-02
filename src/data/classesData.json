@@ -13,8 +13,8 @@
     "11А", "11Б"
   ],
   "userRoles": [
-    { "id": "student", "label": "Я учень" },
-    { "id": "teacher", "label": "Я вчитель" },
-    { "id": "guest", "label": "Я відвідувач" }
+    { "id": "student", "label": "Я - учень" },
+    { "id": "teacher", "label": "Я - вчитель" },
+    { "id": "guest", "label": "Я - відвідувач" }
   ]
 }

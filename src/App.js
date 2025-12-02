@@ -308,30 +308,32 @@ function App() {
         )}
       </div>
 
-      <div className="tabs-container">
-        <button
-          className={`tab-button ${
-            activeTab === "discovering" ? "active" : ""
-          }`}
-          onClick={() => setActiveTab("discovering")}
-        >
-          Досліджуємо Україну
-        </button>
-        <button
-          className={`tab-button ${activeTab === "adventures" ? "active" : ""}`}
-          onClick={() => setActiveTab("adventures")}
-        >
-          Подорожуємо Україною
-        </button>
-        {!currentUser && (
+      {!showAuthModal && (
+        <div className="tabs-container">
           <button
-            className="tab-button auth-button"
-            onClick={() => setShowAuthModal(true)}
+            className={`tab-button ${
+              activeTab === "discovering" ? "active" : ""
+            }`}
+            onClick={() => setActiveTab("discovering")}
           >
-            Увійти / Реєстрація
+            Досліджуємо Україну
           </button>
-        )}
-      </div>
+          <button
+            className={`tab-button ${activeTab === "adventures" ? "active" : ""}`}
+            onClick={() => setActiveTab("adventures")}
+          >
+            Подорожуємо Україною
+          </button>
+          {!currentUser && (
+            <button
+              className="tab-button auth-button"
+              onClick={() => setShowAuthModal(true)}
+            >
+              Увійти / Реєстрація
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="hero-title">
         <p className="school-name">
@@ -361,7 +363,36 @@ function App() {
 
       <AboutSection />
 
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+      {/* Floating registration button for mobile - only show when not logged in and auth modal is closed */}
+      {!currentUser && !showAuthModal && (
+        <button
+          className="mobile-auth-floating-btn"
+          onClick={() => setShowAuthModal(true)}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          Увійти / Реєстрація
+        </button>
+      )}
+
+      {showAuthModal && (
+        <AuthModal
+          onClose={() => setShowAuthModal(false)}
+          onAuthSuccess={() => {
+            // Immediately refresh user data when auth succeeds
+            loadUserFromStorage();
+          }}
+        />
+      )}
 
       <ConfirmModal
         isOpen={showLogoutConfirm}
