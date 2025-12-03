@@ -616,17 +616,14 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
       </p>
       <div className="qr-code-container">
         <img
-          src={regionData.qrCodePath}
+          src="/qr-code.jpg"
           alt="QR Code для благодійного внеску"
           className="qr-code-image"
-          onError={(e) => {
-            e.target.style.display = "none";
-            e.target.nextSibling.style.display = "flex";
-          }}
         />
-        <div className="qr-placeholder" style={{ display: "none" }}>
-          QR-код буде тут
-        </div>
+      </div>
+      <div className="card-number-container">
+        <p className="card-number-label">Або перекажіть на картку:</p>
+        <p className="card-number">5168 7521 4673 8201</p>
       </div>
       <div className="region-modal-buttons">
         <button className="region-modal-btn cancel" onClick={handleBackToInfo}>

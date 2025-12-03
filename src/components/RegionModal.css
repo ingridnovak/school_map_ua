@@ -461,6 +461,30 @@
   border: 2px dashed #ccc;
 }
 
+.card-number-container {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  border: 1px solid #dee2e6;
+}
+
+.card-number-label {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.card-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c5530;
+  letter-spacing: 2px;
+  font-family: 'Courier New', monospace;
+  user-select: all;
+}
+
 .certificate-preview {
   display: flex;
   flex-direction: column;
