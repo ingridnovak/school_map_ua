@@ -1,3 +1,36 @@
+/* Contact Info */
+.contact-info {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-size: 13px;
+  color: #555;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.contact-info:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.contact-info svg {
+  color: #6f9c76;
+  flex-shrink: 0;
+}
+
+.contact-info span {
+  color: #555;
+}
+
 /* User Section */
 .user-section {
   position: absolute;
@@ -35,6 +68,25 @@
   font-weight: 600;
   color: #333;
   white-space: nowrap;
+}
+
+.user-donation-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%);
+  border: 1px solid #ffb3b3;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #d63031;
+  white-space: nowrap;
+}
+
+.user-donation-badge svg {
+  fill: #ff6b6b;
+  stroke: #d63031;
 }
 
 /* Tab Navigation */
@@ -365,6 +417,18 @@
 
 /* Responsive design for mobile and tablet */
 @media (max-width: 1024px) {
+  .contact-info {
+    top: 10px;
+    left: 10px;
+    padding: 8px;
+    font-size: 12px;
+    border-radius: 50%;
+  }
+
+  .contact-info span {
+    display: none;
+  }
+
   .user-section {
     top: 10px;
     right: 10px;
@@ -385,6 +449,16 @@
 
   .user-name {
     font-size: 14px;
+  }
+
+  .user-donation-badge {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  .user-donation-badge svg {
+    width: 14px;
+    height: 14px;
   }
 
   .tabs-container {

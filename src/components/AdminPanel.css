@@ -672,6 +672,50 @@
   margin-bottom: 16px;
 }
 
+/* Token Expired */
+.admin-token-expired {
+  text-align: center;
+  padding: 60px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.token-expired-icon {
+  font-size: 64px;
+  margin-bottom: 8px;
+}
+
+.admin-token-expired h3 {
+  font-size: 20px;
+  color: #374151;
+  margin: 0;
+}
+
+.admin-token-expired p {
+  color: #6b7280;
+  margin: 0;
+  font-size: 15px;
+}
+
+.admin-btn.relogin {
+  margin-top: 16px;
+  background: linear-gradient(135deg, #6f9c76 0%, #5a8060 100%);
+  color: white;
+  padding: 12px 32px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.admin-btn.relogin:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(111, 156, 118, 0.3);
+}
+
 /* Edit Modal */
 .admin-edit-overlay {
   position: fixed;
