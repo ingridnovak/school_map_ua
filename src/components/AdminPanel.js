@@ -3,7 +3,7 @@ import { api } from "../services/api";
 import "./AdminPanel.css";
 import { useToast } from "./Toast";
 
-function AdminPanel({ onClose, userRole }) {
+function AdminPanel({ onClose, userRole, onLogout }) {
   const [activeTab, setActiveTab] = useState("users");
   const [users, setUsers] = useState([]);
   const [pins, setPins] = useState([]);
@@ -12,6 +12,7 @@ function AdminPanel({ onClose, userRole }) {
   const [donations, setDonations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [tokenExpired, setTokenExpired] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [isSaving, setIsSaving] = useState(false);
@@ -130,7 +131,19 @@ function AdminPanel({ onClose, userRole }) {
         console.error("Error loading donations:", e);
       }
     } catch (err) {
-      setError(err.message || "Помилка завантаження даних");
+      const errorMessage = err.message || "Помилка завантаження даних";
+      // Check if token expired (401 error or specific messages)
+      if (
+        errorMessage.includes("401") ||
+        errorMessage.toLowerCase().includes("unauthorized") ||
+        errorMessage.toLowerCase().includes("token") ||
+        errorMessage.toLowerCase().includes("expired") ||
+        errorMessage.toLowerCase().includes("jwt")
+      ) {
+        setTokenExpired(true);
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -773,6 +786,23 @@ function AdminPanel({ onClose, userRole }) {
             <div className="admin-loading">
               <div className="admin-spinner"></div>
               <p>Завантаження...</p>
+            </div>
+          ) : tokenExpired ? (
+            <div className="admin-token-expired">
+              <div className="token-expired-icon">⏰</div>
+              <h3>Ойой... Вийшов час користування токеном</h3>
+              <p>Будь ласка, перезайдіть в свій акаунт знову</p>
+              <button
+                className="admin-btn relogin"
+                onClick={() => {
+                  if (onLogout) {
+                    onLogout();
+                  }
+                  onClose();
+                }}
+              >
+                Перезайти
+              </button>
             </div>
           ) : error ? (
             <div className="admin-error">

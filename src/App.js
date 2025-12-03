@@ -489,6 +489,7 @@ function App() {
         <AdminPanel
           onClose={() => setShowAdminPanel(false)}
           userRole={currentUser?.role}
+          onLogout={handleLogoutConfirm}
         />
       )}
 
