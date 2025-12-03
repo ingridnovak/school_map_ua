@@ -3,6 +3,7 @@ import confetti from "canvas-confetti";
 import "./RegionModal.css";
 import regionsData from "../data/regionsData.json";
 import regionClassData from "../data/regionData";
+import classesData from "../data/classesData.json";
 import { api } from "../services/api";
 import { useToast } from "./Toast";
 
@@ -52,17 +53,23 @@ function RegionModal({ regionKey, onClose, onOpenAuth }) {
       return;
     }
 
+    // Get student count from hardcoded classesData
+    const classInfo = classesData.amountOfStudents.find(
+      (c) => c.class === assignedClass
+    );
+    const hardcodedStudentCount = classInfo?.students || 0;
+
     setIsLoadingDonations(true);
     api
       .getClassDonationsTotal(assignedClass)
       .then((result) => {
         setRegionDonationTotal(result.data?.totalAmount || 0);
-        setRegionStudentCount(result.data?.studentCount || 0);
+        setRegionStudentCount(hardcodedStudentCount);
       })
       .catch((error) => {
         console.error("Error fetching class donations:", error);
         setRegionDonationTotal(0);
-        setRegionStudentCount(0);
+        setRegionStudentCount(hardcodedStudentCount);
       })
       .finally(() => {
         setIsLoadingDonations(false);

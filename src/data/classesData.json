@@ -16,5 +16,108 @@
     { "id": "student", "label": "Я - учень" },
     { "id": "teacher", "label": "Я - вчитель" },
     { "id": "guest", "label": "Я - відвідувач" }
+  ],
+  "amountOfStudents": [
+  {
+    "class": "1А",
+    "students": 24
+  },
+  {
+    "class": "1Б",
+    "students": 21
+  },
+  {
+    "class": "2А",
+    "students": 24
+  },
+  {
+    "class": "2Б",
+    "students": 25
+  },
+  {
+    "class": "3А",
+    "students": 24
+  },
+  {
+    "class": "3Б",
+    "students": 29
+  },
+  {
+    "class": "3В",
+    "students": 16
+  },
+  {
+    "class": "4А",
+    "students": 28
+  },
+  {
+    "class": "4Б",
+    "students": 26
+  },
+  {
+    "class": "4В",
+    "students": 21
+  },
+  {
+    "class": "5А",
+    "students": 30
+  },
+  {
+    "class": "5Б",
+    "students": 31
+  },
+  {
+    "class": "6А",
+    "students": 34
+  },
+  {
+    "class": "6Б",
+    "students": 29
+  },
+  {
+    "class": "7А",
+    "students": 29
+  },
+  {
+    "class": "7Б",
+    "students": 28
+  },
+  {
+    "class": "7В",
+    "students": 23
+  },
+  {
+    "class": "8А",
+    "students": 32
+  },
+  {
+    "class": "8Б",
+    "students": 29
+  },
+  {
+    "class": "8В",
+    "students": 17
+  },
+  {
+    "class": "9А",
+    "students": 18
+  },
+  {
+    "class": "9Б",
+    "students": 25
+  },
+  {
+    "class": "10",
+    "students": 29
+  },
+  {
+    "class": "11А",
+    "students": 22
+  },
+  {
+    "class": "11Б",
+    "students": 23
+    
+  }
   ]
 }
