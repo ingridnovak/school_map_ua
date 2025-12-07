@@ -454,7 +454,7 @@ export const api = {
 
   // ==================== SUPERADMIN ENDPOINTS ====================
 
-  getAllUsers: async (limit = 100, offset = 0) => {
+  getAllUsers: async (limit = 10000, offset = 0) => {
     const response = await fetch(
       `${API_BASE_URL}/superadmin/users?limit=${limit}&offset=${offset}`,
       {
@@ -464,7 +464,7 @@ export const api = {
     return handleResponse(response);
   },
 
-  getAllDonations: async (limit = 100, offset = 0) => {
+  getAllDonations: async (limit = 10000, offset = 0) => {
     const response = await fetch(
       `${API_BASE_URL}/superadmin/donations?limit=${limit}&offset=${offset}`,
       {
